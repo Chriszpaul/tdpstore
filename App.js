@@ -186,27 +186,38 @@ export default function App() {
   }
 
   function renderHome() {
+    const shopStores = stores.filter((store) => store.id !== 'all');
     return <>
       <View style={styles.delivery}><Text style={styles.deliveryText}>📍  Shopping at <Text style={styles.deliveryStrong}>{storeId === 'all' ? 'All stores' : getStore(storeId).name}</Text></Text><TouchableOpacity onPress={() => setTab('Stores')}><Text style={styles.changeLink}>Change</Text></TouchableOpacity></View>
-      <LinearGradient colors={palette.gradient} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.hero}>
-        <View style={styles.heroCopy}><Text style={styles.eyebrow}>THE TECH EDIT</Text><Text style={styles.heroTitle}>Good tech.{'\n'}Better prices.</Text><Text style={styles.heroSubtitle}>Find your next favourite gadget.</Text><TouchableOpacity style={styles.heroButton} onPress={goToShop}><Text style={styles.heroButtonText}>Explore the shop  →</Text></TouchableOpacity></View>
-        <View style={styles.heroArt}><Text style={styles.heroEmoji}>🎧</Text><Text style={styles.heroSparkle}>✦</Text></View>
+      <LinearGradient colors={palette.gradient} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={[styles.hero, styles.featuredShopAd]}>
+        <Text style={styles.eyebrow}>THIS WEEK'S FEATURED SHOP</Text>
+        <Text style={styles.heroTitle}>TDP Central</Text>
+        <Text style={styles.heroSubtitle}>Explore trusted local tech and helpful in-store service.</Text>
+        <TouchableOpacity style={styles.heroButton} onPress={() => { setStoreId('central'); setCategory('All'); setSearch(''); setTab('Shop'); }} accessibilityRole="button"><Text style={styles.heroButtonText}>Visit featured shop  →</Text></TouchableOpacity>
+        <View style={styles.adGlow} />
       </LinearGradient>
-      <View style={styles.sectionHeading}><Text style={styles.sectionTitle}>Shop by category</Text><Text style={styles.sectionHint}>Choose a category below</Text></View>
-      <CategoryPicker value={category} onChange={(value) => { setCategory(value); setTab('Shop'); }} />
-      <View style={styles.sectionHeading}><Text style={styles.sectionTitle}>Popular right now</Text><TouchableOpacity onPress={goToShop}><Text style={styles.changeLink}>See all  →</Text></TouchableOpacity></View>
-      <ProductGrid items={visibleProducts.slice(0, 4)} />
-      <View style={styles.promise}><Text style={styles.promiseIcon}>🚚</Text><View><Text style={styles.promiseTitle}>Free delivery on orders over ₹999</Text><Text style={styles.muted}>Easy returns · Secure checkout</Text></View></View>
+      <View style={styles.sectionHeading}><Text style={styles.sectionTitle}>Explore our shops</Text><Text style={styles.sectionHint}>{shopStores.length} local locations</Text></View>
+      {shopStores.map((store) => {
+        const count = products.filter((product) => product.store === store.id).length;
+        return <TouchableOpacity key={store.id} style={styles.homeStoreCard} onPress={() => { setStoreId(store.id); setCategory('All'); setSearch(''); setTab('Shop'); }} accessibilityRole="button" accessibilityLabel={"Browse " + store.name}>
+          <View style={styles.homeStoreIcon}><Text style={styles.homeStoreEmoji}>{store.icon}</Text></View>
+          <View style={styles.storeCopy}><Text style={styles.storeName}>{store.name}</Text><Text style={styles.muted}>{store.area}</Text><Text style={styles.storeCount}>{count} products available</Text></View>
+          <Text style={styles.menuArrow}>›</Text>
+        </TouchableOpacity>;
+      })}
     </>;
   }
 
   function renderShop() {
     return <>
-      <Text style={styles.pageTitle}>Shop tech</Text><Text style={styles.pageIntro}>Browse products from your favourite TDP store.</Text>
-      <View style={styles.searchBox}><Text style={styles.searchIcon}>⌕</Text><TextInput value={search} onChangeText={setSearch} placeholder="Search products..." placeholderTextColor={palette.muted} style={styles.searchInput} accessibilityLabel="Search products" returnKeyType="search" /></View>
-      <Text style={styles.filterLabel}>STORE</Text><StorePicker />
-      <Text style={styles.filterLabel}>CATEGORY</Text><CategoryPicker value={category} onChange={setCategory} />
-      <Text style={styles.filterLabel}>SORT</Text><CategoryPicker value={sortBy} onChange={setSortBy} options={sortOptions} />
+      <Text style={styles.pageTitle}>Shop tech</Text><Text style={styles.pageIntro}>Search and refine products in one place.</Text>
+      <View style={styles.filterPanel}>
+        <View style={styles.filterPanelHeading}><Text style={styles.filterPanelTitle}>Search & filters</Text><Text style={styles.sectionHint}>Choose any combination</Text></View>
+        <View style={styles.searchBox}><Text style={styles.searchIcon}>⌕</Text><TextInput value={search} onChangeText={setSearch} placeholder="Search products..." placeholderTextColor={palette.muted} style={styles.searchInput} accessibilityLabel="Search products" returnKeyType="search" /><TouchableOpacity onPress={() => setSearch('')} accessibilityRole="button" accessibilityLabel="Clear search"><Text style={styles.clearSearch}>{search ? 'Clear' : ''}</Text></TouchableOpacity></View>
+        <View style={styles.filterGroup}><Text style={styles.filterLabel}>STORE</Text><StorePicker /></View>
+        <View style={styles.filterGroup}><Text style={styles.filterLabel}>CATEGORY</Text><CategoryPicker value={category} onChange={setCategory} /></View>
+        <View style={styles.filterGroup}><Text style={styles.filterLabel}>SORT BY</Text><CategoryPicker value={sortBy} onChange={setSortBy} options={sortOptions} /></View>
+      </View>
       <View style={styles.sectionHeading}><Text style={styles.sectionTitle}>{visibleProducts.length} products</Text><Text style={styles.sectionHint}>{storeId === 'all' ? 'All stores' : getStore(storeId).name}</Text></View>
       <ProductGrid items={visibleProducts} />
     </>;
@@ -317,6 +328,9 @@ function createStyles(colors) {
   modeToggle: { paddingHorizontal: 10, paddingVertical: 9, borderRadius: 12, backgroundColor: colors.soft }, modeToggleText: { color: colors.primaryText, fontSize: 10, fontWeight: '700' },
   topCart: { paddingHorizontal: 13, paddingVertical: 10, borderRadius: 13, backgroundColor: colors.glass, borderWidth: 1, borderColor: colors.border }, topCartText: { color: colors.text, fontSize: 12, fontWeight: '700' },
   delivery: { flexDirection: 'row', alignItems: 'center', paddingBottom: 14, gap: 7 }, deliveryText: { color: colors.muted, fontSize: 12 }, deliveryStrong: { color: colors.text, fontWeight: '700' }, changeLink: { color: colors.primary, fontSize: 11, fontWeight: '700' },
+  featuredShopAd: { minHeight: 260, justifyContent: 'center', alignItems: 'flex-start' }, adGlow: { position: 'absolute', width: 210, height: 210, borderRadius: 110, right: -60, top: 30, backgroundColor: 'rgba(255,255,255,0.08)' },
+  homeStoreCard: { flexDirection: 'row', alignItems: 'center', gap: 13, padding: 14, borderRadius: 17, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, marginBottom: 10 }, homeStoreIcon: { width: 48, height: 48, borderRadius: 15, backgroundColor: colors.soft, alignItems: 'center', justifyContent: 'center' }, homeStoreEmoji: { fontSize: 23 },
+  filterPanel: { padding: 14, borderRadius: 18, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, marginTop: 4 }, filterPanelHeading: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 7 }, filterPanelTitle: { color: colors.text, fontSize: 14, fontWeight: '800', letterSpacing: 0.1 }, filterGroup: { marginTop: 8 }, clearSearch: { color: colors.primary, fontSize: 10, fontWeight: '700', minWidth: 32, textAlign: 'right' },
   hero: { minHeight: 220, borderRadius: 25, overflow: 'hidden', padding: 23, flexDirection: 'row', alignItems: 'center' }, heroCopy: { flex: 1, zIndex: 1 }, eyebrow: { color: '#C9E1FF', fontSize: 10, fontWeight: '800', letterSpacing: 2 },
   heroTitle: { color: '#FFFFFF', fontSize: 34, fontWeight: '800', lineHeight: 39, letterSpacing: -1.3, marginTop: 8 }, heroSubtitle: { color: 'rgba(255,255,255,0.78)', fontSize: 12, marginTop: 7 }, heroButton: { alignSelf: 'flex-start', backgroundColor: 'rgba(255,255,255,0.16)', paddingHorizontal: 14, paddingVertical: 11, borderRadius: 12, marginTop: 15 }, heroButtonText: { color: '#FFFFFF', fontSize: 11, fontWeight: '700' },
   heroArt: { width: 88, height: 88, borderRadius: 30, backgroundColor: 'rgba(255,255,255,0.13)', alignItems: 'center', justifyContent: 'center', transform: [{ rotate: '9deg' }] }, heroEmoji: { fontSize: 50 }, heroSparkle: { position: 'absolute', color: '#FFB84D', fontSize: 25, top: -10, right: 0 },

@@ -13,3 +13,9 @@ Record customer-visible features and fixes here. Add an entry with every future 
 - Added a header toggle to switch between light and dark mode.
 - Updated the interface typography to a formal, platform-friendly font stack.
 
+
+## 2026-10-15 (shop-first home)
+
+- Replaced product recommendations on Home with a featured shop promotion and cards for each TDP location.
+- Grouped product search, store, category, and sort controls into one Shop filter panel.
+
