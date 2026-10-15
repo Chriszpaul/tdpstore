@@ -264,14 +264,42 @@ export default function App() {
   function renderDetails() {
     const product = selectedProduct;
     if (!product) return null;
+    const hasDiscount = product.oldPrice > product.price;
+    const discountPercent = hasDiscount ? Math.round((1 - product.price / product.oldPrice) * 100) : 0;
     return <>
       <TouchableOpacity onPress={() => setSelectedProduct(null)} style={styles.backButton}><Text style={styles.backButtonText}>←  Back to shop</Text></TouchableOpacity>
-      <View style={[styles.detailArt, { backgroundColor: product.color || '#EAE8FF' }]}><Text style={styles.detailEmoji}>{product.emoji || '📦'}</Text></View>
-      <Text style={styles.productCategory}>{product.category.toUpperCase()}  ·  ★ {product.rating || 'New'}</Text><Text style={styles.detailTitle}>{product.name}</Text><Text style={styles.detailPrice}>{money(product.price)}</Text>
+      <View style={[styles.detailArt, { backgroundColor: product.color || '#EAE8FF' }]}>
+        <Text style={styles.detailEmoji}>{product.emoji || '📦'}</Text>
+        <View style={styles.productTag}><Text style={styles.productTagText}>{product.tag || 'IN STORE'}</Text></View>
+        <TouchableOpacity onPress={() => toggleFavorite(product.id)} style={styles.detailFavorite} accessibilityRole="button" accessibilityLabel={favorites.includes(product.id) ? 'Remove from favourites' : 'Save to favourites'}>
+          <Text style={styles.detailFavoriteText}>{favorites.includes(product.id) ? '♥ Saved' : '♡ Save'}</Text>
+        </TouchableOpacity>
+      </View>
+      <Text style={styles.productCategory}>{product.category.toUpperCase()}</Text>
+      <View style={styles.detailRating}><Text style={styles.detailRatingText}>{product.rating === 'New' ? 'New listing' : `★  ${product.rating} / 5`}</Text><Text style={styles.muted}>Available at {getStore(product.store).name}</Text></View>
+      <Text style={styles.detailTitle}>{product.name}</Text>
+      <View style={styles.detailPriceRow}>
+        <Text style={styles.detailPrice}>{money(product.price)}</Text>
+        {hasDiscount ? <><Text style={styles.detailOldPrice}>{money(product.oldPrice)}</Text><Text style={styles.detailSavings}>{discountPercent}% off</Text></> : null}
+      </View>
       <Text style={styles.detailDescription}>{product.description || 'Product details will be added soon.'}</Text>
       <View style={styles.storeDetail}><Text style={styles.storeIcon}>{getStore(product.store).icon}</Text><View><Text style={styles.storeName}>{getStore(product.store).name}</Text><Text style={styles.muted}>Available for local store pickup</Text></View></View>
-      <TouchableOpacity style={styles.primaryButton} onPress={() => addToCart(product)}><Text style={styles.primaryButtonText}>Add to cart · {money(product.price)}</Text></TouchableOpacity>
     </>;
+  }
+
+  function renderDetailActionBar() {
+    if (!selectedProduct) return null;
+    return (
+      <View style={styles.detailActionBar}>
+        <TouchableOpacity style={styles.detailAddButton} onPress={() => addToCart(selectedProduct)} accessibilityRole="button" accessibilityLabel={`Add ${selectedProduct.name} to cart`}>
+          <Text style={styles.detailAddButtonText}>Add to cart · {money(selectedProduct.price)}</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.detailCartButton} onPress={() => { setSelectedProduct(null); setTab('Cart'); }} accessibilityRole="button" accessibilityLabel={`Open cart, ${cartCount} items`}>
+          <Text style={styles.detailCartButtonText}>🛒</Text>
+          {cartCount > 0 ? <View style={styles.detailCartBadge}><Text style={styles.detailCartBadgeText}>{cartCount}</Text></View> : null}
+        </TouchableOpacity>
+      </View>
+    );
   }
 
   const tabItems = [
@@ -282,7 +310,7 @@ export default function App() {
   return (
     <View style={styles.screen}>
       <StatusBar style={theme === 'dark' ? 'light' : 'dark'} />
-      <ScrollView contentContainerStyle={styles.page} keyboardShouldPersistTaps="handled">
+      <ScrollView style={{ flex: 1 }} contentContainerStyle={styles.page} keyboardShouldPersistTaps="handled">
         <View style={styles.topBar}>
           <TouchableOpacity style={styles.brandRow} onPress={() => { setSelectedProduct(null); setTab('Home'); }} accessibilityRole="button" accessibilityLabel="TDP Store home">
             <View style={styles.brandMark}><Text style={styles.brandMarkText}>T</Text></View><Text style={styles.brand}>tdp<Text style={styles.brandAccent}>store</Text></Text>
@@ -294,7 +322,8 @@ export default function App() {
         <Text accessibilityLabel={`${pageTitle} page`} style={styles.srOnly}>{pageTitle}</Text>
         {selectedProduct ? renderDetails() : tab === 'Home' ? renderHome() : tab === 'Shop' ? renderShop() : tab === 'Stores' ? renderStores() : tab === 'Cart' ? renderCart() : tab === 'Favorites' ? renderFavorites() : tab === 'Orders' ? renderOrders() : tab === 'History' ? renderHistory() : tab === 'Account' ? renderAccount() : tab === 'Customer Care' ? renderCustomerCare() : tab === 'Add Item' ? renderAddItem() : renderMore()}
       </ScrollView>
-      <View style={styles.bottomNav}>
+      {selectedProduct ? renderDetailActionBar() : null}
+      {!selectedProduct ? <View style={styles.bottomNav}>
         {tabItems.map((item) => {
           const active = item.name === tab || (item.name === 'More' && ['Add Item', 'Favorites', 'Orders', 'History', 'Account', 'Customer Care'].includes(tab));
           return <TouchableOpacity key={item.name} onPress={() => { setSelectedProduct(null); setTab(item.name); }} style={styles.navItem} accessibilityRole="button" accessibilityState={{ selected: active }}>
@@ -302,7 +331,7 @@ export default function App() {
             <Text style={[styles.navLabel, active && styles.navLabelActive]}>{item.name}</Text>
           </TouchableOpacity>;
         })}
-      </View>
+      </View> : null}
     </View>
   );
 }
@@ -324,7 +353,7 @@ function createStyles(colors) {
   sectionHeading: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between', marginTop: 23, marginBottom: 11 }, sectionTitle: { color: colors.text, fontSize: 16, fontWeight: '800', letterSpacing: -0.3 }, sectionHint: { color: colors.muted, fontSize: 10, fontWeight: '600' },
   chipRow: { gap: 8, paddingVertical: 2, paddingRight: 5 }, chip: { borderRadius: 20, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.surface, paddingHorizontal: 13, paddingVertical: 9 }, chipActive: { backgroundColor: colors.primary, borderColor: colors.primary }, chipText: { color: colors.muted, fontSize: 11, fontWeight: '600' }, chipTextActive: { color: '#FFFFFF' }, filterLabel: { color: colors.muted, fontSize: 9, fontWeight: '800', letterSpacing: 1.2, marginTop: 17, marginBottom: 7 },
   searchBox: { height: 48, borderRadius: 14, backgroundColor: colors.surface, marginTop: 5, marginBottom: 7, paddingHorizontal: 13, flexDirection: 'row', alignItems: 'center', gap: 9, borderWidth: 1, borderColor: colors.border }, searchIcon: { fontSize: 23, color: colors.muted, lineHeight: 27 }, searchInput: { flex: 1, color: colors.text, fontSize: 12, fontFamily: Platform.select({ ios: 'Avenir Next', android: 'sans-serif', default: 'Aptos, Segoe UI, sans-serif' }) },
-  productGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 11 }, productCard: { width: '48%', flexGrow: 1, flexBasis: '43%', maxWidth: 520, borderRadius: 17, backgroundColor: colors.surface, overflow: 'hidden', borderWidth: 1, borderColor: colors.border }, productArt: { height: 130, alignItems: 'center', justifyContent: 'center', position: 'relative' }, productEmoji: { fontSize: 58 }, productTag: { position: 'absolute', top: 9, left: 9, borderRadius: 7, backgroundColor: colors.surface, paddingHorizontal: 7, paddingVertical: 5 }, productTagText: { color: colors.muted, fontSize: 7, fontWeight: '800', letterSpacing: 0.4 },   favoriteButton: { position: 'absolute', top: 8, right: 8, width: 29, height: 29, borderRadius: 15, backgroundColor: colors.surface, alignItems: 'center', justifyContent: 'center' }, favoriteButtonText: { color: '#E45B76', fontSize: 20 }, detailFavorite: { alignSelf: 'flex-start', backgroundColor: '#FFF1F3', paddingVertical: 8, paddingHorizontal: 12, borderRadius: 10, marginTop: 10 }, detailFavoriteText: { color: '#B4465E', fontSize: 11, fontWeight: '700' },
+  productGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 11 }, productCard: { width: '48%', flexGrow: 1, flexBasis: '43%', maxWidth: 520, borderRadius: 17, backgroundColor: colors.surface, overflow: 'hidden', borderWidth: 1, borderColor: colors.border }, productArt: { height: 130, alignItems: 'center', justifyContent: 'center', position: 'relative' }, productEmoji: { fontSize: 58 }, productTag: { position: 'absolute', top: 9, left: 9, borderRadius: 7, backgroundColor: colors.surface, paddingHorizontal: 7, paddingVertical: 5 }, productTagText: { color: colors.muted, fontSize: 7, fontWeight: '800', letterSpacing: 0.4 },   favoriteButton: { position: 'absolute', top: 8, right: 8, width: 29, height: 29, borderRadius: 15, backgroundColor: colors.surface, alignItems: 'center', justifyContent: 'center' }, favoriteButtonText: { color: '#E45B76', fontSize: 20 }, detailFavorite: { position: 'absolute', top: 10, right: 10, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, paddingVertical: 8, paddingHorizontal: 12, borderRadius: 12 }, detailFavoriteText: { color: colors.primaryText, fontSize: 11, fontWeight: '700' }, detailRating: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 5, marginBottom: 8 }, detailRatingText: { color: colors.primaryText, fontSize: 11, fontWeight: '800' }, detailPriceRow: { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 9, marginTop: 5 }, detailOldPrice: { color: colors.muted, fontSize: 13, textDecorationLine: 'line-through' }, detailSavings: { color: '#16834A', fontSize: 10, fontWeight: '800', backgroundColor: colors.soft, paddingHorizontal: 8, paddingVertical: 5, borderRadius: 8 }, detailActionBar: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 20, paddingVertical: 12, backgroundColor: colors.glass, borderTopWidth: 1, borderTopColor: colors.border }, detailAddButton: { flex: 1, minHeight: 48, borderRadius: 13, backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 12 }, detailAddButtonText: { color: '#FFFFFF', fontSize: 12, fontWeight: '800' }, detailCartButton: { width: 48, height: 48, borderRadius: 13, backgroundColor: colors.soft, alignItems: 'center', justifyContent: 'center', position: 'relative' }, detailCartButtonText: { fontSize: 19 }, detailCartBadge: { position: 'absolute', top: -4, right: -4, minWidth: 17, height: 17, borderRadius: 9, backgroundColor: '#EF635B', alignItems: 'center', justifyContent: 'center', paddingHorizontal: 4 }, detailCartBadgeText: { color: '#FFFFFF', fontSize: 9, fontWeight: '800' },
   productInfo: { padding: 11 }, productCategory: { color: colors.muted, fontSize: 8, fontWeight: '700', letterSpacing: 0.4 }, productName: { color: colors.text, fontSize: 13, fontWeight: '700', marginTop: 5 }, productPrice: { color: colors.text, fontSize: 14, fontWeight: '800', marginTop: 6 }, stockLine: { color: colors.muted, fontSize: 9, marginTop: 4 }, addButton: { minHeight: 34, borderRadius: 10, backgroundColor: colors.soft, alignItems: 'center', justifyContent: 'center', marginTop: 10 }, addButtonText: { color: colors.primaryText, fontSize: 10, fontWeight: '700' },
   promise: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 15, borderRadius: 16, backgroundColor: colors.surface, marginTop: 22 }, promiseIcon: { fontSize: 22 }, promiseTitle: { color: colors.text, fontSize: 11, fontWeight: '700' }, muted: { color: colors.muted, fontSize: 10, marginTop: 4, lineHeight: 15 },
   storeCard: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 15, borderRadius: 16, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, marginTop: 10 }, storeCardSelected: { borderColor: colors.primary }, storeIcon: { fontSize: 27 }, storeCopy: { flex: 1 }, storeName: { color: colors.text, fontSize: 13, fontWeight: '700' }, storeCount: { color: colors.primary, fontSize: 10, fontWeight: '700', marginTop: 7 }, secondaryButton: { borderWidth: 1, borderColor: colors.border, borderRadius: 12, minHeight: 43, alignItems: 'center', justifyContent: 'center', marginTop: 14 }, secondaryButtonText: { color: colors.primaryText, fontSize: 11, fontWeight: '700' },
@@ -333,7 +362,7 @@ function createStyles(colors) {
   summaryCard: { padding: 16, backgroundColor: colors.surface, borderRadius: 16, marginTop: 15, borderWidth: 1, borderColor: colors.border }, summaryLine: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginVertical: 5 }, summaryValue: { color: colors.text, fontSize: 11, fontWeight: '600' }, freeText: { color: '#298653', fontSize: 10, fontWeight: '700' }, divider: { height: 1, backgroundColor: colors.border, marginVertical: 8 }, summaryTotalLabel: { color: colors.text, fontSize: 13, fontWeight: '800' }, summaryTotal: { color: colors.text, fontSize: 16, fontWeight: '800' }, primaryButton: { minHeight: 45, backgroundColor: colors.primary, borderRadius: 12, alignItems: 'center', justifyContent: 'center', marginTop: 13 }, primaryButtonText: { color: '#FFFFFF', fontSize: 12, fontWeight: '700' }, checkoutNote: { textAlign: 'center', color: colors.muted, fontSize: 9, marginTop: 8 },
   formCard: { backgroundColor: colors.surface, borderRadius: 17, padding: 15, borderWidth: 1, borderColor: colors.border, marginTop: 5 }, inputLabel: { color: colors.muted, fontSize: 9, fontWeight: '800', letterSpacing: 0.8, marginTop: 12, marginBottom: 6 }, formInput: { minHeight: 43, borderWidth: 1, borderColor: colors.border, borderRadius: 10, paddingHorizontal: 11, color: colors.text, fontSize: 12, fontFamily: Platform.select({ ios: 'Avenir Next', android: 'sans-serif', default: 'Aptos, Segoe UI, sans-serif' }) }, descriptionInput: { minHeight: 74, textAlignVertical: 'top', paddingTop: 10 }, formChips: { flexDirection: 'row', flexWrap: 'wrap', gap: 7 }, formNote: { color: colors.muted, fontSize: 9, lineHeight: 14, marginTop: 10 },
   menuCard: { minHeight: 69, flexDirection: 'row', alignItems: 'center', gap: 12, padding: 13, borderRadius: 15, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, marginTop: 10 }, menuIcon: { width: 36, height: 36, borderRadius: 12, backgroundColor: colors.soft, color: colors.primary, textAlign: 'center', textAlignVertical: 'center', fontSize: 21, overflow: 'hidden' }, menuCopy: { flex: 1 }, menuArrow: { color: colors.muted, fontSize: 18 },
-  backButton: { alignSelf: 'flex-start', paddingVertical: 8 }, backButtonText: { color: colors.primary, fontSize: 12, fontWeight: '700' }, detailArt: { height: 250, borderRadius: 22, alignItems: 'center', justifyContent: 'center', marginTop: 7, marginBottom: 18 }, detailEmoji: { fontSize: 100 }, detailTitle: { color: colors.text, fontSize: 25, fontWeight: '800', marginTop: 7 }, detailPrice: { color: colors.text, fontSize: 20, fontWeight: '800', marginTop: 7 }, detailDescription: { color: colors.muted, fontSize: 12, lineHeight: 19, marginTop: 12 }, storeDetail: { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: colors.surface, borderRadius: 14, padding: 13, marginTop: 18 },
+  backButton: { alignSelf: 'flex-start', paddingVertical: 8 }, backButtonText: { color: colors.primary, fontSize: 12, fontWeight: '700' }, detailArt: { height: 250, borderRadius: 22, alignItems: 'center', justifyContent: 'center', marginTop: 7, marginBottom: 18, position: 'relative' }, detailEmoji: { fontSize: 100 }, detailTitle: { color: colors.text, fontSize: 25, fontWeight: '800', marginTop: 7 }, detailPrice: { color: colors.text, fontSize: 20, fontWeight: '800', marginTop: 7 }, detailDescription: { color: colors.muted, fontSize: 12, lineHeight: 19, marginTop: 12 }, storeDetail: { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: colors.surface, borderRadius: 14, padding: 13, marginTop: 18 },
   notice: { backgroundColor: colors.strong, padding: 10, borderRadius: 10, marginBottom: 10 }, noticeText: { color: '#FFFFFF', fontSize: 11, textAlign: 'center' }, bottomNav: { minHeight: 61, flexDirection: 'row', justifyContent: 'space-around', alignItems: 'center', backgroundColor: colors.glass, borderTopWidth: 1, borderTopColor: colors.border, paddingHorizontal: 4, paddingBottom: 4 }, navItem: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 2 }, navIconWrap: { position: 'relative' }, navIcon: { color: colors.muted, fontSize: 17, fontWeight: '700' }, navIconActive: { color: colors.primary }, navLabel: { color: colors.muted, fontSize: 9, fontWeight: '600' }, navLabelActive: { color: colors.primary, fontWeight: '800' }, navBadge: { position: 'absolute', top: -5, right: -9, minWidth: 14, height: 14, borderRadius: 7, backgroundColor: '#EF635B', alignItems: 'center', justifyContent: 'center', paddingHorizontal: 3 }, navBadgeText: { color: '#FFFFFF', fontSize: 8, fontWeight: '800' }, srOnly: { height: 0, overflow: 'hidden' },
   });
 }
