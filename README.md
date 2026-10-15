@@ -35,3 +35,8 @@ Add a dated entry to CHANGELOG.md alongside every feature or fix.
 - Home now features a shop promotion and location cards, with no product listings.
 - Shop search, store selection, category, and sort controls are grouped in one filter panel.
 
+
+## Store cards
+
+- Home shows each shop in a two-column grid of rectangular cards with its name, location, and product count.
+

@@ -197,14 +197,17 @@ export default function App() {
         <View style={styles.adGlow} />
       </LinearGradient>
       <View style={styles.sectionHeading}><Text style={styles.sectionTitle}>Explore our shops</Text><Text style={styles.sectionHint}>{shopStores.length} local locations</Text></View>
-      {shopStores.map((store) => {
-        const count = products.filter((product) => product.store === store.id).length;
-        return <TouchableOpacity key={store.id} style={styles.homeStoreCard} onPress={() => { setStoreId(store.id); setCategory('All'); setSearch(''); setTab('Shop'); }} accessibilityRole="button" accessibilityLabel={"Browse " + store.name}>
-          <View style={styles.homeStoreIcon}><Text style={styles.homeStoreEmoji}>{store.icon}</Text></View>
-          <View style={styles.storeCopy}><Text style={styles.storeName}>{store.name}</Text><Text style={styles.muted}>{store.area}</Text><Text style={styles.storeCount}>{count} products available</Text></View>
-          <Text style={styles.menuArrow}>›</Text>
-        </TouchableOpacity>;
-      })}
+      <View style={styles.homeStoreGrid}>
+        {shopStores.map((store) => {
+          const count = products.filter((product) => product.store === store.id).length;
+          return <TouchableOpacity key={store.id} style={styles.homeStoreCard} onPress={() => { setStoreId(store.id); setCategory('All'); setSearch(''); setTab('Shop'); }} accessibilityRole="button" accessibilityLabel={"Browse " + store.name}>
+            <View style={styles.homeStoreCardTop}><View style={styles.homeStoreIcon}><Text style={styles.homeStoreEmoji}>{store.icon}</Text></View><Text style={styles.storeBlockArrow}>›</Text></View>
+            <Text style={styles.storeBlockName}>{store.name}</Text>
+            <Text numberOfLines={2} style={styles.muted}>{store.area}</Text>
+            <Text style={styles.storeCount}>{count} products available</Text>
+          </TouchableOpacity>;
+        })}
+      </View>
     </>;
   }
 
@@ -329,7 +332,7 @@ function createStyles(colors) {
   topCart: { paddingHorizontal: 13, paddingVertical: 10, borderRadius: 13, backgroundColor: colors.glass, borderWidth: 1, borderColor: colors.border }, topCartText: { color: colors.text, fontSize: 12, fontWeight: '700' },
   delivery: { flexDirection: 'row', alignItems: 'center', paddingBottom: 14, gap: 7 }, deliveryText: { color: colors.muted, fontSize: 12 }, deliveryStrong: { color: colors.text, fontWeight: '700' }, changeLink: { color: colors.primary, fontSize: 11, fontWeight: '700' },
   featuredShopAd: { minHeight: 260, justifyContent: 'center', alignItems: 'flex-start' }, adGlow: { position: 'absolute', width: 210, height: 210, borderRadius: 110, right: -60, top: 30, backgroundColor: 'rgba(255,255,255,0.08)' },
-  homeStoreCard: { flexDirection: 'row', alignItems: 'center', gap: 13, padding: 14, borderRadius: 17, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, marginBottom: 10 }, homeStoreIcon: { width: 48, height: 48, borderRadius: 15, backgroundColor: colors.soft, alignItems: 'center', justifyContent: 'center' }, homeStoreEmoji: { fontSize: 23 },
+  homeStoreGrid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', gap: 11 }, homeStoreCard: { width: '48%', flexGrow: 1, flexBasis: '42%', minHeight: 178, justifyContent: 'space-between', padding: 14, borderRadius: 17, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border }, homeStoreCardTop: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }, homeStoreIcon: { width: 44, height: 44, borderRadius: 14, backgroundColor: colors.soft, alignItems: 'center', justifyContent: 'center' }, homeStoreEmoji: { fontSize: 22 }, storeBlockName: { color: colors.text, fontSize: 14, fontWeight: '800', marginTop: 12 }, storeBlockArrow: { color: colors.primary, fontSize: 24, fontWeight: '600' },
   filterPanel: { padding: 14, borderRadius: 18, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, marginTop: 4 }, filterPanelHeading: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 7 }, filterPanelTitle: { color: colors.text, fontSize: 14, fontWeight: '800', letterSpacing: 0.1 }, filterGroup: { marginTop: 8 }, clearSearch: { color: colors.primary, fontSize: 10, fontWeight: '700', minWidth: 32, textAlign: 'right' },
   hero: { minHeight: 220, borderRadius: 25, overflow: 'hidden', padding: 23, flexDirection: 'row', alignItems: 'center' }, heroCopy: { flex: 1, zIndex: 1 }, eyebrow: { color: '#C9E1FF', fontSize: 10, fontWeight: '800', letterSpacing: 2 },
   heroTitle: { color: '#FFFFFF', fontSize: 34, fontWeight: '800', lineHeight: 39, letterSpacing: -1.3, marginTop: 8 }, heroSubtitle: { color: 'rgba(255,255,255,0.78)', fontSize: 12, marginTop: 7 }, heroButton: { alignSelf: 'flex-start', backgroundColor: 'rgba(255,255,255,0.16)', paddingHorizontal: 14, paddingVertical: 11, borderRadius: 12, marginTop: 15 }, heroButtonText: { color: '#FFFFFF', fontSize: 11, fontWeight: '700' },

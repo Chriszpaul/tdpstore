@@ -19,3 +19,8 @@ Record customer-visible features and fixes here. Add an entry with every future 
 - Replaced product recommendations on Home with a featured shop promotion and cards for each TDP location.
 - Grouped product search, store, category, and sort controls into one Shop filter panel.
 
+
+## 2026-10-16 (store cards)
+
+- Changed Home's shop list into rectangular cards in a responsive two-column grid, showing each shop's name, location, and product count.
+
