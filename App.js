@@ -2,18 +2,31 @@
 import { StatusBar } from 'expo-status-bar';
 import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
-const categories = ['All', 'Phones', 'Laptops', 'Audio', 'Accessories'];
+const categories = ['All', 'Phones', 'Laptops', 'Audio', 'Accessories', 'Gaming'];
+const sortOptions = ['Featured', 'Price: low to high', 'Price: high to low'];
 const stores = [
   { id: 'all', name: 'All stores', area: 'Browse every location', icon: '🛍️' },
   { id: 'central', name: 'TDP Central', area: 'MG Road · 10:00 AM – 9:00 PM', icon: '🏬' },
   { id: 'north', name: 'TDP North', area: 'North Avenue · 10:00 AM – 8:00 PM', icon: '🏪' },
   { id: 'campus', name: 'TDP Campus', area: 'University Road · 9:00 AM – 7:00 PM', icon: '🏢' },
+  { id: 'east', name: 'TDP East Market', area: 'Lake View Road - 10:00 AM to 8:00 PM', icon: 'E' },
+  { id: 'west', name: 'TDP West End', area: 'Park Street - 10:00 AM to 9:00 PM', icon: 'W' }
 ];
 const starterProducts = [
   { id: 'p1', name: 'Nova X Pro', category: 'Phones', price: 54999, oldPrice: 62999, emoji: '📱', color: '#E8E9FF', rating: '4.8', tag: 'BESTSELLER', store: 'central', description: 'A bright display, a capable camera, and all-day battery life in one everyday phone.' },
   { id: 'p2', name: 'AeroBook 14', category: 'Laptops', price: 74999, oldPrice: 84999, emoji: '💻', color: '#E1F1EE', rating: '4.7', tag: 'NEW', store: 'north', description: 'A lightweight laptop for study, work, and everything in between.' },
   { id: 'p3', name: 'Studio Buds+', category: 'Audio', price: 8999, oldPrice: 11999, emoji: '🎧', color: '#FCE9DE', rating: '4.9', tag: 'SAVE 25%', store: 'campus', description: 'Comfortable wireless sound for your commute, calls, and playlists.' },
   { id: 'p4', name: 'Pulse Watch 3', category: 'Accessories', price: 12999, oldPrice: 15999, emoji: '⌚', color: '#F5E8F4', rating: '4.6', tag: 'POPULAR', store: 'central', description: 'A simple everyday smartwatch with activity and notification features.' },
+  { id: 'p5', name: 'Zen Phone 12', category: 'Phones', price: 32999, emoji: 'PH', color: '#E1ECF7', rating: '4.5', tag: 'VALUE PICK', store: 'north', description: 'An everyday phone with a vivid display and long battery life.' },
+  { id: 'p6', name: 'PixelPro Max', category: 'Phones', price: 67999, emoji: 'PH', color: '#F4E6D8', rating: '4.8', tag: 'CAMERA PICK', store: 'east', description: 'A smooth screen and capable camera for everyday photography.' },
+  { id: 'p7', name: 'Mini One 5G', category: 'Phones', price: 19999, emoji: 'PH', color: '#E2F0E2', rating: '4.4', tag: 'BUDGET PICK', store: 'west', description: 'A compact 5G phone for calls, apps, and streaming.' },
+  { id: 'p8', name: 'TitanBook 15', category: 'Laptops', price: 99999, emoji: 'NB', color: '#E8E5F6', rating: '4.7', tag: 'CREATOR PICK', store: 'central', description: 'A powerful laptop for creative projects, study, and work.' },
+  { id: 'p9', name: 'ThinkBook Air', category: 'Laptops', price: 65999, emoji: 'NB', color: '#DDECEB', rating: '4.6', tag: 'LIGHTWEIGHT', store: 'campus', description: 'A slim everyday laptop that is easy to carry.' },
+  { id: 'p10', name: 'SoundMax Wireless', category: 'Audio', price: 4999, emoji: 'HD', color: '#E9E2F3', rating: '4.4', tag: 'WIRELESS', store: 'north', description: 'Wireless headphones with comfortable cushions.' },
+  { id: 'p11', name: 'BoomBox Go', category: 'Audio', price: 6999, emoji: 'SP', color: '#F6E7D9', rating: '4.6', tag: 'PORTABLE', store: 'east', description: 'A portable speaker for taking your playlists along.' },
+  { id: 'p12', name: 'Arc Wireless Controller', category: 'Gaming', price: 3999, emoji: 'GM', color: '#E8E6F8', rating: '4.5', tag: 'GAMING', store: 'central', description: 'A wireless controller with a comfortable grip.' },
+  { id: 'p13', name: 'ViewPoint 27 Monitor', category: 'Gaming', price: 18999, emoji: 'MN', color: '#E2ECE9', rating: '4.6', tag: '27 INCH', store: 'west', description: 'A 27-inch monitor for gaming or a home office.' },
+  { id: 'p14', name: 'FastCharge 45W', category: 'Accessories', price: 1299, emoji: 'CH', color: '#F3E9D8', rating: '4.5', tag: 'FAST CHARGE', store: 'east', description: 'A compact fast charger for compatible devices.' },
 ];
 const money = (amount) => `₹${Number(amount || 0).toLocaleString('en-IN')}`;
 const getStore = (id) => stores.find((store) => store.id === id) || stores[1];
@@ -22,6 +35,12 @@ export default function App() {
   const [tab, setTab] = useState('Home');
   const [products, setProducts] = useState(starterProducts);
   const [cart, setCart] = useState({});
+  const [favorites, setFavorites] = useState([]);
+  const [orders, setOrders] = useState([]);
+  const [recentViews, setRecentViews] = useState([]);
+  const [accountName, setAccountName] = useState('');
+  const [accountEmail, setAccountEmail] = useState('');
+  const [sortBy, setSortBy] = useState('Featured');
   const [storeId, setStoreId] = useState('all');
   const [category, setCategory] = useState('All');
   const [search, setSearch] = useState('');
@@ -33,12 +52,17 @@ export default function App() {
   const [itemStore, setItemStore] = useState('central');
   const [itemDescription, setItemDescription] = useState('');
 
-  const visibleProducts = useMemo(() => products.filter((product) => {
-    const matchesStore = storeId === 'all' || product.store === storeId;
-    const matchesCategory = category === 'All' || product.category === category;
-    const matchesSearch = `${product.name} ${product.category}`.toLowerCase().includes(search.trim().toLowerCase());
-    return matchesStore && matchesCategory && matchesSearch;
-  }), [products, storeId, category, search]);
+  const visibleProducts = useMemo(() => {
+    const filtered = products.filter((product) => {
+      const matchesStore = storeId === 'all' || product.store === storeId;
+      const matchesCategory = category === 'All' || product.category === category;
+      const matchesSearch = (product.name + ' ' + product.category).toLowerCase().includes(search.trim().toLowerCase());
+      return matchesStore && matchesCategory && matchesSearch;
+    });
+    if (sortBy === 'Price: low to high') return filtered.sort((a, b) => a.price - b.price);
+    if (sortBy === 'Price: high to low') return filtered.sort((a, b) => b.price - a.price);
+    return filtered;
+  }, [products, storeId, category, search, sortBy]);
 
   const cartItems = products.filter((product) => cart[product.id] > 0);
   const cartCount = Object.values(cart).reduce((total, quantity) => total + quantity, 0);
@@ -94,18 +118,23 @@ export default function App() {
 
   const goToShop = () => { setSelectedProduct(null); setTab('Shop'); };
 
+  function openProduct(product) { setSelectedProduct(product); setRecentViews((items) => [product, ...items.filter((item) => item.id !== product.id)].slice(0, 8)); }
+  function toggleFavorite(id) { const saved = favorites.includes(id); setFavorites((items) => saved ? items.filter((savedId) => savedId !== id) : [...items, id]); setNotice(saved ? 'Removed from favourites.' : 'Saved to favourites.'); setTimeout(() => setNotice(''), 1800); }
+  function placeDemoOrder() { const order = { id: 'TDP-' + Date.now().toString().slice(-6), date: new Date().toLocaleDateString('en-IN'), status: 'Processing', total: subtotal + (subtotal >= 999 ? 0 : 99), items: cartItems.map((product) => ({ id: product.id, name: product.name, quantity: cart[product.id] })) }; setOrders((items) => [order, ...items]); setCart({}); setTab('Orders'); setNotice('Demo order placed. No payment was taken.'); setTimeout(() => setNotice(''), 2600); }
+
   function ProductCard({ product }) {
     return (
       <View style={styles.productCard}>
-        <TouchableOpacity onPress={() => setSelectedProduct(product)} accessibilityRole="button" accessibilityLabel={`View ${product.name}`}>
+        <TouchableOpacity onPress={() => openProduct(product)} accessibilityRole="button" accessibilityLabel={`View ${product.name}`}>
           <View style={[styles.productArt, { backgroundColor: product.color || '#EAE8FF' }]}>
             <Text style={styles.productEmoji}>{product.emoji || '📦'}</Text>
             <View style={styles.productTag}><Text style={styles.productTagText}>{product.tag || 'IN STORE'}</Text></View>
+            <TouchableOpacity onPress={() => toggleFavorite(product.id)} style={styles.favoriteButton} accessibilityRole="button"><Text style={styles.favoriteButtonText}>{favorites.includes(product.id) ? String.fromCharCode(9829) : String.fromCharCode(9825)}</Text></TouchableOpacity>
           </View>
         </TouchableOpacity>
         <View style={styles.productInfo}>
           <Text style={styles.productCategory}>{product.category.toUpperCase()}  ·  ★ {product.rating || 'New'}</Text>
-          <TouchableOpacity onPress={() => setSelectedProduct(product)}><Text numberOfLines={1} style={styles.productName}>{product.name}</Text></TouchableOpacity>
+          <TouchableOpacity onPress={() => openProduct(product)}><Text numberOfLines={1} style={styles.productName}>{product.name}</Text></TouchableOpacity>
           <Text style={styles.productPrice}>{money(product.price)}</Text>
           <Text style={styles.stockLine}>Available at {getStore(product.store).name}</Text>
           <TouchableOpacity style={styles.addButton} onPress={() => addToCart(product)} accessibilityRole="button">
@@ -133,10 +162,10 @@ export default function App() {
     );
   }
 
-  function CategoryPicker({ value, onChange }) {
+  function CategoryPicker({ value, onChange, options = categories }) {
     return (
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipRow}>
-        {categories.map((name) => (
+        {options.map((name) => (
           <TouchableOpacity key={name} onPress={() => onChange(name)} style={[styles.chip, value === name && styles.chipActive]} accessibilityRole="button" accessibilityState={{ selected: value === name }}>
             <Text style={[styles.chipText, value === name && styles.chipTextActive]}>{name}</Text>
           </TouchableOpacity>
@@ -166,6 +195,7 @@ export default function App() {
       <View style={styles.searchBox}><Text style={styles.searchIcon}>⌕</Text><TextInput value={search} onChangeText={setSearch} placeholder="Search products..." placeholderTextColor="#8B8D99" style={styles.searchInput} accessibilityLabel="Search products" returnKeyType="search" /></View>
       <Text style={styles.filterLabel}>STORE</Text><StorePicker />
       <Text style={styles.filterLabel}>CATEGORY</Text><CategoryPicker value={category} onChange={setCategory} />
+      <Text style={styles.filterLabel}>SORT</Text><CategoryPicker value={sortBy} onChange={setSortBy} options={sortOptions} />
       <View style={styles.sectionHeading}><Text style={styles.sectionTitle}>{visibleProducts.length} products</Text><Text style={styles.sectionHint}>{storeId === 'all' ? 'All stores' : getStore(storeId).name}</Text></View>
       <ProductGrid items={visibleProducts} />
     </>;
@@ -189,7 +219,7 @@ export default function App() {
       <Text style={styles.pageTitle}>Your cart</Text><Text style={styles.pageIntro}>{cartCount} {cartCount === 1 ? 'item' : 'items'} in your bag</Text>
       {cartItems.length === 0 ? <View style={styles.emptyState}><Text style={styles.emptyEmoji}>🛒</Text><Text style={styles.emptyTitle}>Your cart is waiting</Text><Text style={styles.muted}>Add something you love from the shop.</Text><TouchableOpacity style={styles.heroButton} onPress={goToShop}><Text style={styles.heroButtonText}>Browse products</Text></TouchableOpacity></View> : <>
         {cartItems.map((product) => <View key={product.id} style={styles.cartRow}><View style={[styles.cartArt, { backgroundColor: product.color || '#EAE8FF' }]}><Text style={styles.cartEmoji}>{product.emoji || '📦'}</Text></View><View style={styles.cartDetails}><Text style={styles.productName}>{product.name}</Text><Text style={styles.muted}>{money(product.price)} each</Text><Text style={styles.stockLine}>{getStore(product.store).name}</Text></View><View style={styles.qtyBox}><TouchableOpacity onPress={() => changeQuantity(product.id, -1)} style={styles.qtyButton} accessibilityRole="button" accessibilityLabel={`Remove one ${product.name}`}><Text style={styles.qtyButtonText}>−</Text></TouchableOpacity><Text style={styles.qtyText}>{cart[product.id]}</Text><TouchableOpacity onPress={() => changeQuantity(product.id, 1)} style={styles.qtyButton} accessibilityRole="button" accessibilityLabel={`Add one ${product.name}`}><Text style={styles.qtyButtonText}>+</Text></TouchableOpacity></View><Text style={styles.lineTotal}>{money(product.price * cart[product.id])}</Text></View>)}
-        <View style={styles.summaryCard}><View style={styles.summaryLine}><Text style={styles.muted}>Subtotal</Text><Text style={styles.summaryValue}>{money(subtotal)}</Text></View><View style={styles.summaryLine}><Text style={styles.muted}>Delivery</Text><Text style={styles.freeText}>{subtotal >= 999 ? 'FREE' : money(99)}</Text></View><View style={styles.divider} /><View style={styles.summaryLine}><Text style={styles.summaryTotalLabel}>Total</Text><Text style={styles.summaryTotal}>{money(subtotal + (subtotal >= 999 ? 0 : 99))}</Text></View><TouchableOpacity style={styles.primaryButton} onPress={() => setNotice('Demo checkout only — connect a payment provider to accept orders.')}><Text style={styles.primaryButtonText}>Continue to checkout</Text></TouchableOpacity><Text style={styles.checkoutNote}>Checkout is a demo. No payment will be taken.</Text></View>
+        <View style={styles.summaryCard}><View style={styles.summaryLine}><Text style={styles.muted}>Subtotal</Text><Text style={styles.summaryValue}>{money(subtotal)}</Text></View><View style={styles.summaryLine}><Text style={styles.muted}>Delivery</Text><Text style={styles.freeText}>{subtotal >= 999 ? 'FREE' : money(99)}</Text></View><View style={styles.divider} /><View style={styles.summaryLine}><Text style={styles.summaryTotalLabel}>Total</Text><Text style={styles.summaryTotal}>{money(subtotal + (subtotal >= 999 ? 0 : 99))}</Text></View><TouchableOpacity style={styles.primaryButton} onPress={placeDemoOrder}><Text style={styles.primaryButtonText}>Place demo order</Text></TouchableOpacity><Text style={styles.checkoutNote}>Checkout is a demo. No payment will be taken.</Text></View>
       </>}
     </>;
   }
@@ -209,15 +239,17 @@ export default function App() {
     </>;
   }
 
-  function renderMore() {
-    return <>
-      <Text style={styles.pageTitle}>More</Text><Text style={styles.pageIntro}>Manage your marketplace experience.</Text>
-      <TouchableOpacity style={styles.menuCard} onPress={() => setTab('Add Item')}><Text style={styles.menuIcon}>＋</Text><View style={styles.menuCopy}><Text style={styles.storeName}>Add a product</Text><Text style={styles.muted}>Create a listing for the shop</Text></View><Text style={styles.menuArrow}>→</Text></TouchableOpacity>
-      <View style={styles.menuCard}><Text style={styles.menuIcon}>👤</Text><View style={styles.menuCopy}><Text style={styles.storeName}>Account</Text><Text style={styles.muted}>Sign-in and profile can be added later</Text></View></View>
-      <View style={styles.menuCard}><Text style={styles.menuIcon}>❔</Text><View style={styles.menuCopy}><Text style={styles.storeName}>Help & support</Text><Text style={styles.muted}>Customer help and order support</Text></View></View>
-    </>;
-  }
+  function renderFavorites() { const items = products.filter((product) => favorites.includes(product.id)); return <><Text style={styles.pageTitle}>Favourites</Text><Text style={styles.pageIntro}>Your bookmarked products.</Text><ProductGrid items={items} />{items.length === 0 ? <TouchableOpacity style={styles.secondaryButton} onPress={goToShop}><Text style={styles.secondaryButtonText}>Browse products</Text></TouchableOpacity> : null}</>; }
 
+  function renderOrders() { return <><Text style={styles.pageTitle}>My orders</Text><Text style={styles.pageIntro}>Demo orders placed from this device.</Text>{orders.length === 0 ? <View style={styles.emptyState}><Text style={styles.emptyEmoji}>BOX</Text><Text style={styles.emptyTitle}>No orders yet</Text><Text style={styles.muted}>Orders appear here after checkout.</Text></View> : orders.map((order) => <View key={order.id} style={styles.menuCard}><View style={styles.menuCopy}><Text style={styles.storeName}>{order.id} | {order.status}</Text><Text style={styles.muted}>{order.date} | {order.items.length} items | {money(order.total)}</Text></View></View>)}</>; }
+
+  function renderHistory() { return <><Text style={styles.pageTitle}>History</Text><Text style={styles.pageIntro}>Purchases and recently viewed products.</Text>{orders.map((order) => <View key={order.id} style={styles.menuCard}><View style={styles.menuCopy}><Text style={styles.storeName}>{order.id}</Text><Text style={styles.muted}>{order.date} | {order.status}</Text></View></View>)}<View style={styles.sectionHeading}><Text style={styles.sectionTitle}>Recently viewed</Text></View><ProductGrid items={recentViews} /></>; }
+
+  function renderAccount() { return <><Text style={styles.pageTitle}>Account</Text><Text style={styles.pageIntro}>Your temporary demo profile.</Text><View style={styles.formCard}><Text style={styles.inputLabel}>NAME</Text><TextInput value={accountName} onChangeText={setAccountName} placeholder='Your name' style={styles.formInput} /><Text style={styles.inputLabel}>EMAIL</Text><TextInput value={accountEmail} onChangeText={setAccountEmail} placeholder='you@example.com' keyboardType='email-address' autoCapitalize='none' style={styles.formInput} /><Text style={styles.formNote}>Profile details reset when the app restarts.</Text></View></>; }
+
+  function renderCustomerCare() { return <><Text style={styles.pageTitle}>Customer care</Text><Text style={styles.pageIntro}>Help for this demo store.</Text><View style={styles.menuCard}><View><Text style={styles.storeName}>Where is my order?</Text><Text style={styles.muted}>See My Orders after demo checkout.</Text></View></View><View style={styles.menuCard}><View><Text style={styles.storeName}>Can I pay online?</Text><Text style={styles.muted}>Checkout is a demo and takes no payment.</Text></View></View><Text style={styles.formNote}>Add a real support contact before publishing.</Text></>; }
+
+  function renderMore() { const sections = [{ icon: 'F', title: 'Favourites', tab: 'Favorites' }, { icon: 'O', title: 'My orders', tab: 'Orders' }, { icon: 'H', title: 'History', tab: 'History' }, { icon: 'A', title: 'Account', tab: 'Account' }, { icon: 'C', title: 'Customer care', tab: 'Customer Care' }, { icon: '+', title: 'Add a product', tab: 'Add Item' }]; return <><Text style={styles.pageTitle}>More</Text><Text style={styles.pageIntro}>Saved items, orders, account, and help.</Text>{sections.map((section) => <TouchableOpacity key={section.tab} style={styles.menuCard} onPress={() => setTab(section.tab)} accessibilityRole='button'><Text style={styles.menuIcon}>{section.icon}</Text><View style={styles.menuCopy}><Text style={styles.storeName}>{section.title}</Text></View><Text style={styles.menuArrow}>{">"}</Text></TouchableOpacity>)}</>; }
   function renderDetails() {
     const product = selectedProduct;
     if (!product) return null;
@@ -248,11 +280,11 @@ export default function App() {
         </View>
         {notice ? <View style={styles.notice}><Text style={styles.noticeText}>{notice}</Text></View> : null}
         <Text accessibilityLabel={`${pageTitle} page`} style={styles.srOnly}>{pageTitle}</Text>
-        {selectedProduct ? renderDetails() : tab === 'Home' ? renderHome() : tab === 'Shop' ? renderShop() : tab === 'Stores' ? renderStores() : tab === 'Cart' ? renderCart() : tab === 'Add Item' ? renderAddItem() : renderMore()}
+        {selectedProduct ? renderDetails() : tab === 'Home' ? renderHome() : tab === 'Shop' ? renderShop() : tab === 'Stores' ? renderStores() : tab === 'Cart' ? renderCart() : tab === 'Favorites' ? renderFavorites() : tab === 'Orders' ? renderOrders() : tab === 'History' ? renderHistory() : tab === 'Account' ? renderAccount() : tab === 'Customer Care' ? renderCustomerCare() : tab === 'Add Item' ? renderAddItem() : renderMore()}
       </ScrollView>
       <View style={styles.bottomNav}>
         {tabItems.map((item) => {
-          const active = item.name === tab || (item.name === 'More' && tab === 'Add Item');
+          const active = item.name === tab || (item.name === 'More' && ['Add Item', 'Favorites', 'Orders', 'History', 'Account', 'Customer Care'].includes(tab));
           return <TouchableOpacity key={item.name} onPress={() => { setSelectedProduct(null); setTab(item.name); }} style={styles.navItem} accessibilityRole="button" accessibilityState={{ selected: active }}>
             <View style={styles.navIconWrap}><Text style={[styles.navIcon, active && styles.navIconActive]}>{item.icon}</Text>{item.name === 'Cart' && cartCount > 0 ? <View style={styles.navBadge}><Text style={styles.navBadgeText}>{cartCount}</Text></View> : null}</View>
             <Text style={[styles.navLabel, active && styles.navLabelActive]}>{item.name}</Text>
@@ -278,7 +310,8 @@ const styles = StyleSheet.create({
   sectionHeading: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between', marginTop: 23, marginBottom: 11 }, sectionTitle: { color: '#262730', fontSize: 16, fontWeight: '800', letterSpacing: -0.3 }, sectionHint: { color: '#7B7C87', fontSize: 10, fontWeight: '600' },
   chipRow: { gap: 8, paddingVertical: 2, paddingRight: 5 }, chip: { borderRadius: 20, borderWidth: 1, borderColor: '#E6E6E9', backgroundColor: '#FFFFFF', paddingHorizontal: 13, paddingVertical: 9 }, chipActive: { backgroundColor: '#272832', borderColor: '#272832' }, chipText: { color: '#61626C', fontSize: 11, fontWeight: '600' }, chipTextActive: { color: '#FFFFFF' }, filterLabel: { color: '#858691', fontSize: 9, fontWeight: '800', letterSpacing: 1.2, marginTop: 17, marginBottom: 7 },
   searchBox: { height: 48, borderRadius: 14, backgroundColor: '#FFFFFF', marginTop: 5, marginBottom: 7, paddingHorizontal: 13, flexDirection: 'row', alignItems: 'center', gap: 9, borderWidth: 1, borderColor: '#EEEEF0' }, searchIcon: { fontSize: 23, color: '#777984', lineHeight: 27 }, searchInput: { flex: 1, color: '#252630', fontSize: 12 },
-  productGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 11 }, productCard: { width: '48%', flexGrow: 1, flexBasis: '43%', maxWidth: 520, borderRadius: 17, backgroundColor: '#FFFFFF', overflow: 'hidden', borderWidth: 1, borderColor: '#EEEEF0' }, productArt: { height: 130, alignItems: 'center', justifyContent: 'center', position: 'relative' }, productEmoji: { fontSize: 58 }, productTag: { position: 'absolute', top: 9, left: 9, borderRadius: 7, backgroundColor: '#FFFFFF', paddingHorizontal: 7, paddingVertical: 5 }, productTagText: { color: '#4E4F59', fontSize: 7, fontWeight: '800', letterSpacing: 0.4 }, productInfo: { padding: 11 }, productCategory: { color: '#888995', fontSize: 8, fontWeight: '700', letterSpacing: 0.4 }, productName: { color: '#292A33', fontSize: 13, fontWeight: '700', marginTop: 5 }, productPrice: { color: '#252630', fontSize: 14, fontWeight: '800', marginTop: 6 }, stockLine: { color: '#83848F', fontSize: 9, marginTop: 4 }, addButton: { minHeight: 34, borderRadius: 10, backgroundColor: '#F0EEFF', alignItems: 'center', justifyContent: 'center', marginTop: 10 }, addButtonText: { color: '#5D52D1', fontSize: 10, fontWeight: '700' },
+  productGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 11 }, productCard: { width: '48%', flexGrow: 1, flexBasis: '43%', maxWidth: 520, borderRadius: 17, backgroundColor: '#FFFFFF', overflow: 'hidden', borderWidth: 1, borderColor: '#EEEEF0' }, productArt: { height: 130, alignItems: 'center', justifyContent: 'center', position: 'relative' }, productEmoji: { fontSize: 58 }, productTag: { position: 'absolute', top: 9, left: 9, borderRadius: 7, backgroundColor: '#FFFFFF', paddingHorizontal: 7, paddingVertical: 5 }, productTagText: { color: '#4E4F59', fontSize: 7, fontWeight: '800', letterSpacing: 0.4 },   favoriteButton: { position: 'absolute', top: 8, right: 8, width: 29, height: 29, borderRadius: 15, backgroundColor: '#FFFFFF', alignItems: 'center', justifyContent: 'center' }, favoriteButtonText: { color: '#E45B76', fontSize: 20 }, detailFavorite: { alignSelf: 'flex-start', backgroundColor: '#FFF1F3', paddingVertical: 8, paddingHorizontal: 12, borderRadius: 10, marginTop: 10 }, detailFavoriteText: { color: '#B4465E', fontSize: 11, fontWeight: '700' },
+  productInfo: { padding: 11 }, productCategory: { color: '#888995', fontSize: 8, fontWeight: '700', letterSpacing: 0.4 }, productName: { color: '#292A33', fontSize: 13, fontWeight: '700', marginTop: 5 }, productPrice: { color: '#252630', fontSize: 14, fontWeight: '800', marginTop: 6 }, stockLine: { color: '#83848F', fontSize: 9, marginTop: 4 }, addButton: { minHeight: 34, borderRadius: 10, backgroundColor: '#F0EEFF', alignItems: 'center', justifyContent: 'center', marginTop: 10 }, addButtonText: { color: '#5D52D1', fontSize: 10, fontWeight: '700' },
   promise: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 15, borderRadius: 16, backgroundColor: '#FFFFFF', marginTop: 22 }, promiseIcon: { fontSize: 22 }, promiseTitle: { color: '#30313A', fontSize: 11, fontWeight: '700' }, muted: { color: '#858691', fontSize: 10, marginTop: 4, lineHeight: 15 },
   storeCard: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 15, borderRadius: 16, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#EEEEF0', marginTop: 10 }, storeCardSelected: { borderColor: '#8176EA' }, storeIcon: { fontSize: 27 }, storeCopy: { flex: 1 }, storeName: { color: '#30313A', fontSize: 13, fontWeight: '700' }, storeCount: { color: '#6458E8', fontSize: 10, fontWeight: '700', marginTop: 7 }, secondaryButton: { borderWidth: 1, borderColor: '#DEDDE7', borderRadius: 12, minHeight: 43, alignItems: 'center', justifyContent: 'center', marginTop: 14 }, secondaryButtonText: { color: '#504A9A', fontSize: 11, fontWeight: '700' },
   emptyState: { alignItems: 'center', paddingVertical: 34 }, emptyEmoji: { fontSize: 34 }, emptyTitle: { color: '#292A33', fontSize: 16, fontWeight: '700', marginTop: 8 },
