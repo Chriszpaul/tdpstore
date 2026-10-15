@@ -1,43 +1,11 @@
-﻿import { useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Platform, ScrollView, StyleSheet, Text as NativeText, TextInput, TouchableOpacity, View } from 'react-native';
-
-const Text = (props) => <NativeText {...props} style={[{ fontFamily: Platform.select({ ios: 'Avenir Next', android: 'sans-serif', default: 'Aptos, Segoe UI, sans-serif' }) }, props.style]} />;
-
-const palettes = {
-  light: { background: '#F3F7FC', surface: 'rgba(255,255,255,0.94)', text: '#12213B', muted: '#65748B', primary: '#1769E0', primaryText: '#1555B0', soft: '#E8F1FF', tint: '#DBEAFE', heroAccent: 'rgba(255,255,255,0.16)', border: 'rgba(31,74,133,0.12)', strong: '#122A52', glass: 'rgba(255,255,255,0.88)', gradient: ['#1769E0', '#1247A5', '#081D42'] },
-  dark: { background: '#07111F', surface: 'rgba(16,30,50,0.96)', text: '#E8F0FC', muted: '#9AACC5', primary: '#65A5FF', primaryText: '#9BC4FF', soft: '#172C49', tint: '#203D63', heroAccent: 'rgba(133,184,255,0.18)', border: 'rgba(158,190,232,0.16)', strong: '#0D1B2E', glass: 'rgba(10,22,38,0.9)', gradient: ['#183E70', '#102A50', '#07111F'] },
-};
-
-const categories = ['All', 'Phones', 'Laptops', 'Audio', 'Accessories', 'Gaming'];
-const sortOptions = ['Featured', 'Price: low to high', 'Price: high to low'];
-const stores = [
-  { id: 'all', name: 'All stores', area: 'Browse every location', icon: '🛍️' },
-  { id: 'central', name: 'TDP Central', area: 'MG Road · 10:00 AM – 9:00 PM', icon: '🏬' },
-  { id: 'north', name: 'TDP North', area: 'North Avenue · 10:00 AM – 8:00 PM', icon: '🏪' },
-  { id: 'campus', name: 'TDP Campus', area: 'University Road · 9:00 AM – 7:00 PM', icon: '🏢' },
-  { id: 'east', name: 'TDP East Market', area: 'Lake View Road - 10:00 AM to 8:00 PM', icon: 'E' },
-  { id: 'west', name: 'TDP West End', area: 'Park Street - 10:00 AM to 9:00 PM', icon: 'W' }
-];
-const starterProducts = [
-  { id: 'p1', name: 'Nova X Pro', category: 'Phones', price: 54999, oldPrice: 62999, emoji: '📱', color: '#E8E9FF', rating: '4.8', tag: 'BESTSELLER', store: 'central', description: 'A bright display, a capable camera, and all-day battery life in one everyday phone.' },
-  { id: 'p2', name: 'AeroBook 14', category: 'Laptops', price: 74999, oldPrice: 84999, emoji: '💻', color: '#E1F1EE', rating: '4.7', tag: 'NEW', store: 'north', description: 'A lightweight laptop for study, work, and everything in between.' },
-  { id: 'p3', name: 'Studio Buds+', category: 'Audio', price: 8999, oldPrice: 11999, emoji: '🎧', color: '#FCE9DE', rating: '4.9', tag: 'SAVE 25%', store: 'campus', description: 'Comfortable wireless sound for your commute, calls, and playlists.' },
-  { id: 'p4', name: 'Pulse Watch 3', category: 'Accessories', price: 12999, oldPrice: 15999, emoji: '⌚', color: '#F5E8F4', rating: '4.6', tag: 'POPULAR', store: 'central', description: 'A simple everyday smartwatch with activity and notification features.' },
-  { id: 'p5', name: 'Zen Phone 12', category: 'Phones', price: 32999, emoji: 'PH', color: '#E1ECF7', rating: '4.5', tag: 'VALUE PICK', store: 'north', description: 'An everyday phone with a vivid display and long battery life.' },
-  { id: 'p6', name: 'PixelPro Max', category: 'Phones', price: 67999, emoji: 'PH', color: '#F4E6D8', rating: '4.8', tag: 'CAMERA PICK', store: 'east', description: 'A smooth screen and capable camera for everyday photography.' },
-  { id: 'p7', name: 'Mini One 5G', category: 'Phones', price: 19999, emoji: 'PH', color: '#E2F0E2', rating: '4.4', tag: 'BUDGET PICK', store: 'west', description: 'A compact 5G phone for calls, apps, and streaming.' },
-  { id: 'p8', name: 'TitanBook 15', category: 'Laptops', price: 99999, emoji: 'NB', color: '#E8E5F6', rating: '4.7', tag: 'CREATOR PICK', store: 'central', description: 'A powerful laptop for creative projects, study, and work.' },
-  { id: 'p9', name: 'ThinkBook Air', category: 'Laptops', price: 65999, emoji: 'NB', color: '#DDECEB', rating: '4.6', tag: 'LIGHTWEIGHT', store: 'campus', description: 'A slim everyday laptop that is easy to carry.' },
-  { id: 'p10', name: 'SoundMax Wireless', category: 'Audio', price: 4999, emoji: 'HD', color: '#E9E2F3', rating: '4.4', tag: 'WIRELESS', store: 'north', description: 'Wireless headphones with comfortable cushions.' },
-  { id: 'p11', name: 'BoomBox Go', category: 'Audio', price: 6999, emoji: 'SP', color: '#F6E7D9', rating: '4.6', tag: 'PORTABLE', store: 'east', description: 'A portable speaker for taking your playlists along.' },
-  { id: 'p12', name: 'Arc Wireless Controller', category: 'Gaming', price: 3999, emoji: 'GM', color: '#E8E6F8', rating: '4.5', tag: 'GAMING', store: 'central', description: 'A wireless controller with a comfortable grip.' },
-  { id: 'p13', name: 'ViewPoint 27 Monitor', category: 'Gaming', price: 18999, emoji: 'MN', color: '#E2ECE9', rating: '4.6', tag: '27 INCH', store: 'west', description: 'A 27-inch monitor for gaming or a home office.' },
-  { id: 'p14', name: 'FastCharge 45W', category: 'Accessories', price: 1299, emoji: 'CH', color: '#F3E9D8', rating: '4.5', tag: 'FAST CHARGE', store: 'east', description: 'A compact fast charger for compatible devices.' },
-];
-const money = (amount) => `₹${Number(amount || 0).toLocaleString('en-IN')}`;
-const getStore = (id) => stores.find((store) => store.id === id) || stores[1];
+import { ScrollView, TextInput, TouchableOpacity, View } from 'react-native';
+import Text from './src/components/AppText';
+import { CategoryPicker, ProductGrid, StorePicker } from './src/components/ShopComponents';
+import { categories, getStore, money, palettes, sortOptions, starterProducts, stores } from './src/data/catalog';
+import { createStyles } from './src/styles/appStyles';
 
 export default function App() {
   const [tab, setTab] = useState('Home');
@@ -133,58 +101,6 @@ export default function App() {
   function toggleFavorite(id) { const saved = favorites.includes(id); setFavorites((items) => saved ? items.filter((savedId) => savedId !== id) : [...items, id]); setNotice(saved ? 'Removed from favourites.' : 'Saved to favourites.'); setTimeout(() => setNotice(''), 1800); }
   function placeDemoOrder() { const order = { id: 'TDP-' + Date.now().toString().slice(-6), date: new Date().toLocaleDateString('en-IN'), status: 'Processing', total: subtotal + (subtotal >= 999 ? 0 : 99), items: cartItems.map((product) => ({ id: product.id, name: product.name, quantity: cart[product.id] })) }; setOrders((items) => [order, ...items]); setCart({}); setTab('Orders'); setNotice('Demo order placed. No payment was taken.'); setTimeout(() => setNotice(''), 2600); }
 
-  function ProductCard({ product }) {
-    return (
-      <View style={styles.productCard}>
-        <TouchableOpacity onPress={() => openProduct(product)} accessibilityRole="button" accessibilityLabel={`View ${product.name}`}>
-          <View style={[styles.productArt, { backgroundColor: product.color || '#EAE8FF' }]}>
-            <Text style={styles.productEmoji}>{product.emoji || '📦'}</Text>
-            <View style={styles.productTag}><Text style={styles.productTagText}>{product.tag || 'IN STORE'}</Text></View>
-            <TouchableOpacity onPress={() => toggleFavorite(product.id)} style={styles.favoriteButton} accessibilityRole="button"><Text style={styles.favoriteButtonText}>{favorites.includes(product.id) ? String.fromCharCode(9829) : String.fromCharCode(9825)}</Text></TouchableOpacity>
-          </View>
-        </TouchableOpacity>
-        <View style={styles.productInfo}>
-          <Text style={styles.productCategory}>{product.category.toUpperCase()}  ·  ★ {product.rating || 'New'}</Text>
-          <TouchableOpacity onPress={() => openProduct(product)}><Text numberOfLines={1} style={styles.productName}>{product.name}</Text></TouchableOpacity>
-          <Text style={styles.productPrice}>{money(product.price)}</Text>
-          <Text style={styles.stockLine}>Available at {getStore(product.store).name}</Text>
-          <TouchableOpacity style={styles.addButton} onPress={() => addToCart(product)} accessibilityRole="button">
-            <Text style={styles.addButtonText}>+  Add to cart</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-    );
-  }
-
-  function ProductGrid({ items }) {
-    if (items.length === 0) return <View style={styles.emptyState}><Text style={styles.emptyEmoji}>🔎</Text><Text style={styles.emptyTitle}>No gadgets found</Text><Text style={styles.muted}>Try a different search or filter.</Text></View>;
-    return <View style={styles.productGrid}>{items.map((product) => <ProductCard key={product.id} product={product} />)}</View>;
-  }
-
-  function StorePicker() {
-    return (
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipRow}>
-        {stores.map((store) => (
-          <TouchableOpacity key={store.id} onPress={() => setStoreId(store.id)} style={[styles.chip, storeId === store.id && styles.chipActive]} accessibilityRole="button" accessibilityState={{ selected: storeId === store.id }}>
-            <Text style={[styles.chipText, storeId === store.id && styles.chipTextActive]}>{store.name}</Text>
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
-    );
-  }
-
-  function CategoryPicker({ value, onChange, options = categories }) {
-    return (
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipRow}>
-        {options.map((name) => (
-          <TouchableOpacity key={name} onPress={() => onChange(name)} style={[styles.chip, value === name && styles.chipActive]} accessibilityRole="button" accessibilityState={{ selected: value === name }}>
-            <Text style={[styles.chipText, value === name && styles.chipTextActive]}>{name}</Text>
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
-    );
-  }
-
   function renderHome() {
     const shopStores = stores.filter((store) => store.id !== 'all');
     return <>
@@ -217,12 +133,12 @@ export default function App() {
       <View style={styles.filterPanel}>
         <View style={styles.filterPanelHeading}><Text style={styles.filterPanelTitle}>Search & filters</Text><Text style={styles.sectionHint}>Choose any combination</Text></View>
         <View style={styles.searchBox}><Text style={styles.searchIcon}>⌕</Text><TextInput value={search} onChangeText={setSearch} placeholder="Search products..." placeholderTextColor={palette.muted} style={styles.searchInput} accessibilityLabel="Search products" returnKeyType="search" /><TouchableOpacity onPress={() => setSearch('')} accessibilityRole="button" accessibilityLabel="Clear search"><Text style={styles.clearSearch}>{search ? 'Clear' : ''}</Text></TouchableOpacity></View>
-        <View style={styles.filterGroup}><Text style={styles.filterLabel}>STORE</Text><StorePicker /></View>
-        <View style={styles.filterGroup}><Text style={styles.filterLabel}>CATEGORY</Text><CategoryPicker value={category} onChange={setCategory} /></View>
-        <View style={styles.filterGroup}><Text style={styles.filterLabel}>SORT BY</Text><CategoryPicker value={sortBy} onChange={setSortBy} options={sortOptions} /></View>
+        <View style={styles.filterGroup}><Text style={styles.filterLabel}>STORE</Text><StorePicker styles={styles} stores={stores} value={storeId} onChange={setStoreId} /></View>
+        <View style={styles.filterGroup}><Text style={styles.filterLabel}>CATEGORY</Text><CategoryPicker styles={styles} value={category} onChange={setCategory} options={categories} /></View>
+        <View style={styles.filterGroup}><Text style={styles.filterLabel}>SORT BY</Text><CategoryPicker styles={styles} value={sortBy} onChange={setSortBy} options={sortOptions} /></View>
       </View>
       <View style={styles.sectionHeading}><Text style={styles.sectionTitle}>{visibleProducts.length} products</Text><Text style={styles.sectionHint}>{storeId === 'all' ? 'All stores' : getStore(storeId).name}</Text></View>
-      <ProductGrid items={visibleProducts} />
+      <ProductGrid items={visibleProducts} styles={styles} favorites={favorites} onOpen={openProduct} onToggleFavorite={toggleFavorite} onAdd={addToCart} getStore={getStore} money={money} />
     </>;
   }
 
@@ -264,11 +180,11 @@ export default function App() {
     </>;
   }
 
-  function renderFavorites() { const items = products.filter((product) => favorites.includes(product.id)); return <><Text style={styles.pageTitle}>Favourites</Text><Text style={styles.pageIntro}>Your bookmarked products.</Text><ProductGrid items={items} />{items.length === 0 ? <TouchableOpacity style={styles.secondaryButton} onPress={goToShop}><Text style={styles.secondaryButtonText}>Browse products</Text></TouchableOpacity> : null}</>; }
+  function renderFavorites() { const items = products.filter((product) => favorites.includes(product.id)); return <><Text style={styles.pageTitle}>Favourites</Text><Text style={styles.pageIntro}>Your bookmarked products.</Text><ProductGrid items={items} styles={styles} favorites={favorites} onOpen={openProduct} onToggleFavorite={toggleFavorite} onAdd={addToCart} getStore={getStore} money={money} />{items.length === 0 ? <TouchableOpacity style={styles.secondaryButton} onPress={goToShop}><Text style={styles.secondaryButtonText}>Browse products</Text></TouchableOpacity> : null}</>; }
 
   function renderOrders() { return <><Text style={styles.pageTitle}>My orders</Text><Text style={styles.pageIntro}>Demo orders placed from this device.</Text>{orders.length === 0 ? <View style={styles.emptyState}><Text style={styles.emptyEmoji}>BOX</Text><Text style={styles.emptyTitle}>No orders yet</Text><Text style={styles.muted}>Orders appear here after checkout.</Text></View> : orders.map((order) => <View key={order.id} style={styles.menuCard}><View style={styles.menuCopy}><Text style={styles.storeName}>{order.id} | {order.status}</Text><Text style={styles.muted}>{order.date} | {order.items.length} items | {money(order.total)}</Text></View></View>)}</>; }
 
-  function renderHistory() { return <><Text style={styles.pageTitle}>History</Text><Text style={styles.pageIntro}>Purchases and recently viewed products.</Text>{orders.map((order) => <View key={order.id} style={styles.menuCard}><View style={styles.menuCopy}><Text style={styles.storeName}>{order.id}</Text><Text style={styles.muted}>{order.date} | {order.status}</Text></View></View>)}<View style={styles.sectionHeading}><Text style={styles.sectionTitle}>Recently viewed</Text></View><ProductGrid items={recentViews} /></>; }
+  function renderHistory() { return <><Text style={styles.pageTitle}>History</Text><Text style={styles.pageIntro}>Purchases and recently viewed products.</Text>{orders.map((order) => <View key={order.id} style={styles.menuCard}><View style={styles.menuCopy}><Text style={styles.storeName}>{order.id}</Text><Text style={styles.muted}>{order.date} | {order.status}</Text></View></View>)}<View style={styles.sectionHeading}><Text style={styles.sectionTitle}>Recently viewed</Text></View><ProductGrid items={recentViews} styles={styles} favorites={favorites} onOpen={openProduct} onToggleFavorite={toggleFavorite} onAdd={addToCart} getStore={getStore} money={money} /></>; }
 
   function renderAccount() { return <><Text style={styles.pageTitle}>Account</Text><Text style={styles.pageIntro}>Your temporary demo profile.</Text><View style={styles.formCard}><Text style={styles.inputLabel}>NAME</Text><TextInput value={accountName} onChangeText={setAccountName} placeholder='Your name' placeholderTextColor={palette.muted} style={styles.formInput} /><Text style={styles.inputLabel}>EMAIL</Text><TextInput value={accountEmail} onChangeText={setAccountEmail} placeholder='you@example.com' placeholderTextColor={palette.muted} keyboardType='email-address' autoCapitalize='none' style={styles.formInput} /><Text style={styles.formNote}>Profile details reset when the app restarts.</Text></View></>; }
 
@@ -321,36 +237,3 @@ export default function App() {
   );
 }
 
-function createStyles(colors) {
-  return StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.background },
-  page: { width: '100%', maxWidth: 1080, alignSelf: 'center', paddingHorizontal: 20, paddingBottom: 26, flexGrow: 1 },
-  topBar: { minHeight: 70, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  brandRow: { flexDirection: 'row', alignItems: 'center', gap: 9 }, brandMark: { width: 34, height: 34, borderRadius: 12, backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center' }, brandMarkText: { color: '#FFFFFF', fontSize: 20, fontWeight: '800' },
-  brand: { color: colors.text, fontSize: 22, fontWeight: '800', letterSpacing: -1 }, brandAccent: { color: colors.primary },
-  modeToggle: { paddingHorizontal: 10, paddingVertical: 9, borderRadius: 12, backgroundColor: colors.soft }, modeToggleText: { color: colors.primaryText, fontSize: 10, fontWeight: '700' },
-  topCart: { paddingHorizontal: 13, paddingVertical: 10, borderRadius: 13, backgroundColor: colors.glass, borderWidth: 1, borderColor: colors.border }, topCartText: { color: colors.text, fontSize: 12, fontWeight: '700' },
-  delivery: { flexDirection: 'row', alignItems: 'center', paddingBottom: 14, gap: 7 }, deliveryText: { color: colors.muted, fontSize: 12 }, deliveryStrong: { color: colors.text, fontWeight: '700' }, changeLink: { color: colors.primary, fontSize: 11, fontWeight: '700' },
-  featuredShopAd: { minHeight: 260, justifyContent: 'center', alignItems: 'flex-start' }, adGlow: { position: 'absolute', width: 210, height: 210, borderRadius: 110, right: -60, top: 30, backgroundColor: 'rgba(255,255,255,0.08)' },
-  homeStoreGrid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', gap: 11 }, homeStoreCard: { width: '48%', flexGrow: 1, flexBasis: '42%', minHeight: 178, justifyContent: 'space-between', padding: 14, borderRadius: 17, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border }, homeStoreCardTop: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }, homeStoreIcon: { width: 44, height: 44, borderRadius: 14, backgroundColor: colors.soft, alignItems: 'center', justifyContent: 'center' }, homeStoreEmoji: { fontSize: 22 }, storeBlockName: { color: colors.text, fontSize: 14, fontWeight: '800', marginTop: 12 }, storeBlockArrow: { color: colors.primary, fontSize: 24, fontWeight: '600' },
-  filterPanel: { padding: 14, borderRadius: 18, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, marginTop: 4 }, filterPanelHeading: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 7 }, filterPanelTitle: { color: colors.text, fontSize: 14, fontWeight: '800', letterSpacing: 0.1 }, filterGroup: { marginTop: 8 }, clearSearch: { color: colors.primary, fontSize: 10, fontWeight: '700', minWidth: 32, textAlign: 'right' },
-  hero: { minHeight: 220, borderRadius: 25, overflow: 'hidden', padding: 23, flexDirection: 'row', alignItems: 'center' }, heroCopy: { flex: 1, zIndex: 1 }, eyebrow: { color: '#C9E1FF', fontSize: 10, fontWeight: '800', letterSpacing: 2 },
-  heroTitle: { color: '#FFFFFF', fontSize: 34, fontWeight: '800', lineHeight: 39, letterSpacing: -1.3, marginTop: 8 }, heroSubtitle: { color: 'rgba(255,255,255,0.78)', fontSize: 12, marginTop: 7 }, heroButton: { alignSelf: 'flex-start', backgroundColor: 'rgba(255,255,255,0.16)', paddingHorizontal: 14, paddingVertical: 11, borderRadius: 12, marginTop: 15 }, heroButtonText: { color: '#FFFFFF', fontSize: 11, fontWeight: '700' },
-  heroArt: { width: 88, height: 88, borderRadius: 30, backgroundColor: 'rgba(255,255,255,0.13)', alignItems: 'center', justifyContent: 'center', transform: [{ rotate: '9deg' }] }, heroEmoji: { fontSize: 50 }, heroSparkle: { position: 'absolute', color: '#FFB84D', fontSize: 25, top: -10, right: 0 },
-  pageTitle: { color: colors.text, fontSize: 25, fontWeight: '800', letterSpacing: -0.7, marginTop: 12 }, pageIntro: { color: colors.muted, fontSize: 12, lineHeight: 18, marginTop: 5, marginBottom: 14 },
-  sectionHeading: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between', marginTop: 23, marginBottom: 11 }, sectionTitle: { color: colors.text, fontSize: 16, fontWeight: '800', letterSpacing: -0.3 }, sectionHint: { color: colors.muted, fontSize: 10, fontWeight: '600' },
-  chipRow: { gap: 8, paddingVertical: 2, paddingRight: 5 }, chip: { borderRadius: 20, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.surface, paddingHorizontal: 13, paddingVertical: 9 }, chipActive: { backgroundColor: colors.primary, borderColor: colors.primary }, chipText: { color: colors.muted, fontSize: 11, fontWeight: '600' }, chipTextActive: { color: '#FFFFFF' }, filterLabel: { color: colors.muted, fontSize: 9, fontWeight: '800', letterSpacing: 1.2, marginTop: 17, marginBottom: 7 },
-  searchBox: { height: 48, borderRadius: 14, backgroundColor: colors.surface, marginTop: 5, marginBottom: 7, paddingHorizontal: 13, flexDirection: 'row', alignItems: 'center', gap: 9, borderWidth: 1, borderColor: colors.border }, searchIcon: { fontSize: 23, color: colors.muted, lineHeight: 27 }, searchInput: { flex: 1, color: colors.text, fontSize: 12, fontFamily: Platform.select({ ios: 'Avenir Next', android: 'sans-serif', default: 'Aptos, Segoe UI, sans-serif' }) },
-  productGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 11 }, productCard: { width: '48%', flexGrow: 1, flexBasis: '43%', maxWidth: 520, borderRadius: 17, backgroundColor: colors.surface, overflow: 'hidden', borderWidth: 1, borderColor: colors.border }, productArt: { height: 130, alignItems: 'center', justifyContent: 'center', position: 'relative' }, productEmoji: { fontSize: 58 }, productTag: { position: 'absolute', top: 9, left: 9, borderRadius: 7, backgroundColor: colors.surface, paddingHorizontal: 7, paddingVertical: 5 }, productTagText: { color: colors.muted, fontSize: 7, fontWeight: '800', letterSpacing: 0.4 },   favoriteButton: { position: 'absolute', top: 8, right: 8, width: 29, height: 29, borderRadius: 15, backgroundColor: colors.surface, alignItems: 'center', justifyContent: 'center' }, favoriteButtonText: { color: '#E45B76', fontSize: 20 }, detailFavorite: { alignSelf: 'flex-start', backgroundColor: '#FFF1F3', paddingVertical: 8, paddingHorizontal: 12, borderRadius: 10, marginTop: 10 }, detailFavoriteText: { color: '#B4465E', fontSize: 11, fontWeight: '700' },
-  productInfo: { padding: 11 }, productCategory: { color: colors.muted, fontSize: 8, fontWeight: '700', letterSpacing: 0.4 }, productName: { color: colors.text, fontSize: 13, fontWeight: '700', marginTop: 5 }, productPrice: { color: colors.text, fontSize: 14, fontWeight: '800', marginTop: 6 }, stockLine: { color: colors.muted, fontSize: 9, marginTop: 4 }, addButton: { minHeight: 34, borderRadius: 10, backgroundColor: colors.soft, alignItems: 'center', justifyContent: 'center', marginTop: 10 }, addButtonText: { color: colors.primaryText, fontSize: 10, fontWeight: '700' },
-  promise: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 15, borderRadius: 16, backgroundColor: colors.surface, marginTop: 22 }, promiseIcon: { fontSize: 22 }, promiseTitle: { color: colors.text, fontSize: 11, fontWeight: '700' }, muted: { color: colors.muted, fontSize: 10, marginTop: 4, lineHeight: 15 },
-  storeCard: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 15, borderRadius: 16, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, marginTop: 10 }, storeCardSelected: { borderColor: colors.primary }, storeIcon: { fontSize: 27 }, storeCopy: { flex: 1 }, storeName: { color: colors.text, fontSize: 13, fontWeight: '700' }, storeCount: { color: colors.primary, fontSize: 10, fontWeight: '700', marginTop: 7 }, secondaryButton: { borderWidth: 1, borderColor: colors.border, borderRadius: 12, minHeight: 43, alignItems: 'center', justifyContent: 'center', marginTop: 14 }, secondaryButtonText: { color: colors.primaryText, fontSize: 11, fontWeight: '700' },
-  emptyState: { alignItems: 'center', paddingVertical: 34 }, emptyEmoji: { fontSize: 34 }, emptyTitle: { color: colors.text, fontSize: 16, fontWeight: '700', marginTop: 8 },
-  cartRow: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 10, padding: 11, borderRadius: 15, backgroundColor: colors.surface, marginTop: 10, borderWidth: 1, borderColor: colors.border }, cartArt: { width: 55, height: 55, borderRadius: 13, alignItems: 'center', justifyContent: 'center' }, cartEmoji: { fontSize: 28 }, cartDetails: { flex: 1, minWidth: 105 }, qtyBox: { flexDirection: 'row', alignItems: 'center', gap: 8 }, qtyButton: { width: 27, height: 27, borderRadius: 9, backgroundColor: colors.soft, alignItems: 'center', justifyContent: 'center' }, qtyButtonText: { color: colors.primaryText, fontSize: 17, fontWeight: '700', lineHeight: 20 }, qtyText: { color: colors.text, fontSize: 11, fontWeight: '700' }, lineTotal: { minWidth: 65, textAlign: 'right', color: colors.text, fontSize: 11, fontWeight: '800' },
-  summaryCard: { padding: 16, backgroundColor: colors.surface, borderRadius: 16, marginTop: 15, borderWidth: 1, borderColor: colors.border }, summaryLine: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginVertical: 5 }, summaryValue: { color: colors.text, fontSize: 11, fontWeight: '600' }, freeText: { color: '#298653', fontSize: 10, fontWeight: '700' }, divider: { height: 1, backgroundColor: colors.border, marginVertical: 8 }, summaryTotalLabel: { color: colors.text, fontSize: 13, fontWeight: '800' }, summaryTotal: { color: colors.text, fontSize: 16, fontWeight: '800' }, primaryButton: { minHeight: 45, backgroundColor: colors.primary, borderRadius: 12, alignItems: 'center', justifyContent: 'center', marginTop: 13 }, primaryButtonText: { color: '#FFFFFF', fontSize: 12, fontWeight: '700' }, checkoutNote: { textAlign: 'center', color: colors.muted, fontSize: 9, marginTop: 8 },
-  formCard: { backgroundColor: colors.surface, borderRadius: 17, padding: 15, borderWidth: 1, borderColor: colors.border, marginTop: 5 }, inputLabel: { color: colors.muted, fontSize: 9, fontWeight: '800', letterSpacing: 0.8, marginTop: 12, marginBottom: 6 }, formInput: { minHeight: 43, borderWidth: 1, borderColor: colors.border, borderRadius: 10, paddingHorizontal: 11, color: colors.text, fontSize: 12, fontFamily: Platform.select({ ios: 'Avenir Next', android: 'sans-serif', default: 'Aptos, Segoe UI, sans-serif' }) }, descriptionInput: { minHeight: 74, textAlignVertical: 'top', paddingTop: 10 }, formChips: { flexDirection: 'row', flexWrap: 'wrap', gap: 7 }, formNote: { color: colors.muted, fontSize: 9, lineHeight: 14, marginTop: 10 },
-  menuCard: { minHeight: 69, flexDirection: 'row', alignItems: 'center', gap: 12, padding: 13, borderRadius: 15, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, marginTop: 10 }, menuIcon: { width: 36, height: 36, borderRadius: 12, backgroundColor: colors.soft, color: colors.primary, textAlign: 'center', textAlignVertical: 'center', fontSize: 21, overflow: 'hidden' }, menuCopy: { flex: 1 }, menuArrow: { color: colors.muted, fontSize: 18 },
-  backButton: { alignSelf: 'flex-start', paddingVertical: 8 }, backButtonText: { color: colors.primary, fontSize: 12, fontWeight: '700' }, detailArt: { height: 250, borderRadius: 22, alignItems: 'center', justifyContent: 'center', marginTop: 7, marginBottom: 18 }, detailEmoji: { fontSize: 100 }, detailTitle: { color: colors.text, fontSize: 25, fontWeight: '800', marginTop: 7 }, detailPrice: { color: colors.text, fontSize: 20, fontWeight: '800', marginTop: 7 }, detailDescription: { color: colors.muted, fontSize: 12, lineHeight: 19, marginTop: 12 }, storeDetail: { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: colors.surface, borderRadius: 14, padding: 13, marginTop: 18 },
-  notice: { backgroundColor: colors.strong, padding: 10, borderRadius: 10, marginBottom: 10 }, noticeText: { color: '#FFFFFF', fontSize: 11, textAlign: 'center' }, bottomNav: { minHeight: 61, flexDirection: 'row', justifyContent: 'space-around', alignItems: 'center', backgroundColor: colors.glass, borderTopWidth: 1, borderTopColor: colors.border, paddingHorizontal: 4, paddingBottom: 4 }, navItem: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 2 }, navIconWrap: { position: 'relative' }, navIcon: { color: colors.muted, fontSize: 17, fontWeight: '700' }, navIconActive: { color: colors.primary }, navLabel: { color: colors.muted, fontSize: 9, fontWeight: '600' }, navLabelActive: { color: colors.primary, fontWeight: '800' }, navBadge: { position: 'absolute', top: -5, right: -9, minWidth: 14, height: 14, borderRadius: 7, backgroundColor: '#EF635B', alignItems: 'center', justifyContent: 'center', paddingHorizontal: 3 }, navBadgeText: { color: '#FFFFFF', fontSize: 8, fontWeight: '800' }, srOnly: { height: 0, overflow: 'hidden' },
-  });
-}

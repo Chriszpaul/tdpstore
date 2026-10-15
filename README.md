@@ -40,3 +40,12 @@ Add a dated entry to CHANGELOG.md alongside every feature or fix.
 
 - Home shows each shop in a two-column grid of rectangular cards with its name, location, and product count.
 
+
+## Code layout
+
+- App.js keeps app state, actions, and screen selection.
+- src/data/catalog.js contains the sample shops, products, and shared theme palettes.
+- src/components/AppText.js contains the shared font setup.
+- src/components/ShopComponents.js contains reusable product cards, product grids, and filter pickers.
+- src/styles/appStyles.js contains the shared light/dark styles.
+

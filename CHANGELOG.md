@@ -24,3 +24,9 @@ Record customer-visible features and fixes here. Add an entry with every future 
 
 - Changed Home's shop list into rectangular cards in a responsive two-column grid, showing each shop's name, location, and product count.
 
+
+## 2026-10-16 (code organization)
+
+- Split catalog data, reusable product/filter components, shared typography, and theme styles into separate beginner-friendly JavaScript modules.
+- Kept App.js focused on app state, actions, and choosing which screen to show.
+
