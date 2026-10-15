@@ -24,3 +24,8 @@ Products, favourites, cart, profile, and orders are held in memory and reset whe
 ## Changelog
 
 Add a dated entry to CHANGELOG.md alongside every feature or fix.
+## Appearance
+
+- Switch between a light blue theme and a dark navy theme with translucent surfaces and a blue gradient banner.
+- The interface uses a clean system font stack chosen for iOS, Android, and web.
+
