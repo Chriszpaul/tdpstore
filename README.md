@@ -4,19 +4,35 @@ This is the main project folder for the TDP Store marketplace. Apps live under a
 
 ## Project structure
 
-- apps/customer-app/ — working customer-facing React Native + Expo app.
-- apps/shop-portal/ — planned shop-owner and staff app.
+- apps/customer-app/ — customer-facing React Native + Expo app.
+- apps/shop-portal/ — shop-owner and staff React Native + Expo frontend.
 - apps/admin-portal/ — planned platform administration app.
 - apps/delivery-app/ — planned delivery-agent app.
-- apps/api/ — planned backend API; no backend code has been added yet.
+- apps/api/ — planned backend API; backend code has not been added yet.
 - packages/types/ — planned shared types.
 - packages/validation/ — planned shared validation.
 - database/migrations/ and database/seed/ — planned schema changes and starter data.
 
-Only the customer app is implemented so far; the other folders are placeholders to organize upcoming work.
+The customer app and shop portal are frontend previews. Their sample data is local and resets when the apps restart. The admin, delivery, and API folders remain placeholders.
 
 ## Run the customer app
 
-Open a terminal in apps/customer-app, then run npm install and npx expo start --web.
+From the project root:
 
-See apps/customer-app/README.md for customer-app details.
+```powershell
+cd apps/customer-app
+npm install
+npx expo start --web
+```
+
+## Run the shop portal
+
+From the project root:
+
+```powershell
+cd apps/shop-portal
+npm install
+npx expo start --web
+```
+
+See each app's README for its screens and current limitations.
