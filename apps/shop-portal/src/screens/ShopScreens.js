@@ -79,9 +79,54 @@ export function Products() {
  const list = useMemo(() => products.filter((p) => (p.name + p.sku + p.category).toLowerCase().includes(query.toLowerCase())), [products, query]);
  return <Page title="Products" subtitle="Add items to your store and keep their details up to date."><View style={[S.row, { marginBottom: 13 }]}><TextInput value={query} onChangeText={setQuery} placeholder="Search products or SKU" placeholderTextColor="#7186A4" style={[S.input, { flex: 1, marginBottom: 0, marginRight: 8 }]} /><Button label="＋ Add" onPress={() => setShow(true)} /></View><Card>{list.length ? list.map((p) => <ProductRow key={p.id} product={p} />) : <Text style={S.small}>No products match your search.</Text>}</Card><ProductModal visible={show} close={() => setShow(false)} /></Page>;
 }
+function EditStockModal({ product, visible, close, saveProduct }) {
+ const { products } = useShop();
+ const [fields, setFields] = useState(() => product ? { name: product.name, sku: product.sku, category: product.category, price: String(product.price), stock: String(product.stock), reorderLevel: String(product.reorderLevel), location: product.location } : { name: '', sku: '', category: '', price: '', stock: '', reorderLevel: '', location: '' });
+ const [error, setError] = useState('');
+ const change = (key, value) => setFields((current) => ({ ...current, [key]: value }));
+ const submit = () => {
+  const sku = fields.sku.trim().toUpperCase();
+  const price = Number(fields.price);
+  const stock = Number(fields.stock);
+  const reorderLevel = Number(fields.reorderLevel);
+  if (!fields.name.trim() || !sku || !fields.category.trim() || !fields.location.trim()) return setError('Fill in the name, SKU, category, and shelf location.');
+  if (!fields.price.trim() || !Number.isFinite(price) || price < 0) return setError('Enter a valid price in rupees.');
+  if (!Number.isInteger(stock) || stock < 0 || !Number.isInteger(reorderLevel) || reorderLevel < 0) return setError('Stock and reorder level must be whole numbers of zero or more.');
+  if (products.some((item) => item.id !== product.id && item.sku.toLowerCase() === sku.toLowerCase())) return setError('That SKU is already used by another product.');
+  saveProduct(product.id, { name: fields.name.trim(), sku, category: fields.category.trim(), price, stock, reorderLevel, location: fields.location.trim() });
+  close();
+ };
+ if (!product) return null;
+ return <Modal visible={visible} transparent animationType="fade" onRequestClose={close}>
+  <View style={S.modalShade}><ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: 'center' }} keyboardShouldPersistTaps="handled">
+   <View style={S.modal}>
+    <View style={[S.row, { justifyContent: 'space-between', marginBottom: 9 }]}><Text style={S.orderId}>Edit stock item</Text><Pressable onPress={close}><Text style={{ color: C.muted, fontSize: 22 }}>×</Text></Pressable></View>
+    <Text style={S.label}>PRODUCT NAME</Text><TextInput value={fields.name} onChangeText={(value) => change('name', value)} style={S.input} />
+    <View style={S.row}><View style={{ flex: 1, marginRight: 7 }}><Text style={S.label}>SKU</Text><TextInput value={fields.sku} onChangeText={(value) => change('sku', value)} autoCapitalize="characters" style={S.input} /></View><View style={{ flex: 1, marginLeft: 7 }}><Text style={S.label}>CATEGORY</Text><TextInput value={fields.category} onChangeText={(value) => change('category', value)} style={S.input} /></View></View>
+    <View style={S.row}><View style={{ flex: 1, marginRight: 7 }}><Text style={S.label}>PRICE (₹)</Text><TextInput value={fields.price} onChangeText={(value) => change('price', value)} keyboardType="decimal-pad" style={S.input} /></View><View style={{ flex: 1, marginLeft: 7 }}><Text style={S.label}>QUANTITY</Text><TextInput value={fields.stock} onChangeText={(value) => change('stock', value)} keyboardType="number-pad" style={S.input} /></View></View>
+    <View style={S.row}><View style={{ flex: 1, marginRight: 7 }}><Text style={S.label}>REORDER LEVEL</Text><TextInput value={fields.reorderLevel} onChangeText={(value) => change('reorderLevel', value)} keyboardType="number-pad" style={S.input} /></View><View style={{ flex: 1, marginLeft: 7 }}><Text style={S.label}>SHELF LOCATION</Text><TextInput value={fields.location} onChangeText={(value) => change('location', value)} style={S.input} /></View></View>
+    {error ? <Text style={{ color: C.red, fontSize: 12, marginBottom: 11 }}>{error}</Text> : null}
+    <View style={S.row}><Button label="Cancel" secondary onPress={close} style={{ flex: 1, marginRight: 6 }} /><Button label="Save changes" onPress={submit} style={{ flex: 1, marginLeft: 6 }} /></View>
+   </View>
+  </ScrollView></View>
+ </Modal>;
+}
+
+function DeleteStockModal({ product, visible, cancel, confirm }) {
+ if (!product) return null;
+ return <Modal visible={visible} transparent animationType="fade" onRequestClose={cancel}>
+  <View style={S.modalShade}><View style={S.modal}>
+   <Text style={S.orderId}>Delete product?</Text>
+   <Text style={[S.small, { lineHeight: 19, marginTop: 9, marginBottom: 18 }]}>“{product.name}” will be removed from this store&apos;s inventory. You can add it again later.</Text>
+   <View style={S.row}><Button label="Keep product" secondary onPress={cancel} style={{ flex: 1, marginRight: 6 }} /><Button label="Delete product" onPress={confirm} style={{ flex: 1, marginLeft: 6, backgroundColor: '#A93652' }} /></View>
+  </View></View>
+ </Modal>;
+}
 export function Inventory() {
- const { products, changeStock } = useShop();
+ const { products, changeStock, updateProduct, deleteProduct } = useShop();
  const [filter, setFilter] = useState('All stock');
+ const [editingProduct, setEditingProduct] = useState(null);
+ const [deletingProduct, setDeletingProduct] = useState(null);
  const stockStatus = (product) => product.stock === 0 ? 'Out of stock' : product.stock <= product.reorderLevel ? 'Low stock' : 'In stock';
  const counts = {
   all: products.length,
@@ -93,24 +138,32 @@ export function Inventory() {
   <View style={S.metrics}><Metric label="Products tracked" value={String(counts.all)} foot="In this store" /><Metric label="Low stock" value={String(counts.low)} foot="At or below reorder level" /><Metric label="Out of stock" value={String(counts.out)} foot="Unavailable to customers" /></View>
   <Section>Inventory details</Section>
   <Filter items={['All stock', 'In stock', 'Low stock', 'Out of stock']} value={filter} onChange={setFilter} />
-  <Card>{list.length ? list.map((p, index) => <View key={p.id} style={[S.productRow, index === list.length - 1 && { borderBottomWidth: 0, paddingBottom: 2 }]}>
-   <View style={{ flex: 1 }}>
-    <Text style={S.name}>{p.name}</Text>
-    <Text style={S.small}>{p.sku} · {p.category}</Text>
-    <Text style={[S.small, { marginTop: 6 }]}>{p.location} · Reorder at {p.reorderLevel}</Text>
-    <Text style={[S.small, { color: C.text, marginTop: 5 }]}>{cash(p.price)} each</Text>
-    <View style={{ marginTop: 7 }}><Badge value={stockStatus(p)} /></View>
-   </View>
-   <View style={{ alignItems: 'center' }}>
-    <Text style={S.small}>On hand</Text>
-    <View style={[S.row, { marginTop: 7 }]}>
-     <Pressable accessibilityLabel="Decrease stock" onPress={() => changeStock(p.id, -1)} style={S.adjust}><Text style={S.orderId}>−</Text></Pressable>
-     <Text style={S.stockNum}>{p.stock}</Text>
-     <Pressable accessibilityLabel="Increase stock" onPress={() => changeStock(p.id, 1)} style={S.adjust}><Text style={S.orderId}>＋</Text></Pressable>
+  <Card>{list.length ? list.map((p, index) => <View key={p.id} style={[S.dividerRow, index === list.length - 1 && { borderBottomWidth: 0 }]}>
+   <View style={[S.row, { alignItems: 'flex-start' }]}>
+    <View style={{ flex: 1, paddingRight: 8 }}>
+     <Text style={S.name}>{p.name}</Text>
+     <Text style={S.small}>{p.sku} · {p.category}</Text>
+     <Text style={[S.small, { marginTop: 6 }]}>{p.location} · Reorder at {p.reorderLevel}</Text>
+     <Text style={[S.small, { color: C.text, marginTop: 5 }]}>{cash(p.price)} each</Text>
+     <View style={{ marginTop: 7 }}><Badge value={stockStatus(p)} /></View>
     </View>
+    <View style={{ alignItems: 'center' }}>
+     <Text style={S.small}>On hand</Text>
+     <View style={[S.row, { marginTop: 7 }]}>
+      <Pressable accessibilityRole="button" accessibilityLabel={'Decrease stock for ' + p.name} onPress={() => changeStock(p.id, -1)} style={S.adjust}><Text style={S.orderId}>−</Text></Pressable>
+      <Text style={S.stockNum}>{p.stock}</Text>
+      <Pressable accessibilityRole="button" accessibilityLabel={'Increase stock for ' + p.name} onPress={() => changeStock(p.id, 1)} style={S.adjust}><Text style={S.orderId}>＋</Text></Pressable>
+     </View>
+    </View>
+   </View>
+   <View style={[S.row, { marginTop: 12 }]}>
+    <Button label="Edit details" secondary onPress={() => setEditingProduct(p)} style={{ flex: 1, marginRight: 6 }} />
+    <Button label="Delete" secondary onPress={() => setDeletingProduct(p)} style={{ flex: 1, marginLeft: 6, borderColor: '#6A3449', backgroundColor: '#35202E' }} />
    </View>
   </View>) : <Text style={S.small}>No products match this stock status.</Text>}</Card>
   <Text style={[S.small, { marginTop: 12 }]}>Inventory changes are temporary until the backend is connected.</Text>
+  <EditStockModal key={editingProduct?.id || 'closed'} product={editingProduct} visible={!!editingProduct} close={() => setEditingProduct(null)} saveProduct={updateProduct} />
+  <DeleteStockModal product={deletingProduct} visible={!!deletingProduct} cancel={() => setDeletingProduct(null)} confirm={() => { deleteProduct(deletingProduct.id); setDeletingProduct(null); }} />
  </Page>;
 }
 export function Team() {
@@ -126,3 +179,4 @@ export function Store() {
   {notice ? <Text style={[S.small, { marginTop: 12, textAlign: 'center' }]}>This setting can be connected when the API is ready.</Text> : null}
  </Page>;
 }
+
