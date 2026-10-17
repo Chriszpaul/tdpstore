@@ -12,10 +12,13 @@ A customer-facing tech marketplace built with React Native and Expo. This is a f
 
 ## Run the app
 
-From the project folder:
+From the repository root, run:
 
+```powershell
+cd apps/customer-app
 npm install
 npx expo start --web
+```
 
 ## Demo limitations
 
@@ -48,4 +51,8 @@ Add a dated entry to CHANGELOG.md alongside every feature or fix.
 - src/components/AppText.js contains the shared font setup.
 - src/components/ShopComponents.js contains reusable product cards, product grids, and filter pickers.
 - src/styles/appStyles.js contains the shared light/dark styles.
+
+
+
+
 
