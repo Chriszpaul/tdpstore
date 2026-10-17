@@ -36,7 +36,12 @@ export function Card({ children, style }) { return <View style={[S.card, style]}
 export function Section({ children }) { return <Text style={S.section}>{children}</Text>; }
 export function Button({ label, onPress, secondary, style }) { return <Pressable onPress={onPress} style={[secondary ? S.secondary : S.btn, style]}><Text style={secondary ? S.secondaryText : S.btnText}>{label}</Text></Pressable>; }
 export function Badge({ value }) {
- const tone = { New: [C.blue, '#173D64'], Preparing: [C.amber, '#493A24'], Ready: [C.cyan, '#17444D'], Completed: [C.green, '#183F37'], 'Low stock': [C.red, '#4A2635'], Owner: [C.blue, '#173D64'] }[value] || [C.muted, C.raised];
+ const palette = {
+  New: [C.blue, '#173D64'], Preparing: [C.amber, '#493A24'], Ready: [C.cyan, '#17444D'], Completed: [C.green, '#183F37'],
+  'Low stock': [C.red, '#4A2635'], 'Out of stock': [C.red, '#4A2635'], 'In stock': [C.green, '#183F37'], Owner: [C.blue, '#173D64'],
+  'Ready for pickup': [C.cyan, '#17444D'], 'Picked up': [C.blue, '#173D64'], 'In transit': [C.amber, '#493A24'], 'Out for delivery': [C.cyan, '#17444D'], Delivered: [C.green, '#183F37'],
+ };
+ const tone = palette[value] || [C.muted, C.raised];
  return <View style={[S.badge, { backgroundColor: tone[1] }]}><Text style={[S.badgeText, { color: tone[0] }]}>{value}</Text></View>;
 }
 export function Metric({ label, value, foot }) { return <View style={S.metric}><Text style={S.metricLabel}>{label}</Text><Text style={S.metricValue}>{value}</Text><Text style={S.metricFoot}>{foot}</Text></View>; }

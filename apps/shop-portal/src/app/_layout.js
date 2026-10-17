@@ -6,8 +6,9 @@ import { ShopDataProvider } from '../context/ShopDataContext';
 const items = {
  index: ['Home', 'view-dashboard-outline'],
  orders: ['Orders', 'receipt-text-outline'],
+ deliveries: ['Deliveries', 'truck-delivery-outline'],
  products: ['Products', 'tag-multiple-outline'],
- inventory: ['Stock', 'cube-outline'],
+ inventory: ['Stock status', 'cube-outline'],
  team: ['Team', 'account-group-outline'],
  store: ['Store', 'storefront-outline'],
 };

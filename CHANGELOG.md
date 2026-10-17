@@ -9,3 +9,7 @@
 - Built the first shop-owner and staff frontend in apps/shop-portal/ with Expo Router tabs for dashboard, orders, products, inventory, team, and store settings.
 - Added local demo interactions for advancing order statuses, creating products, changing stock, adding staff, and pausing or reopening the store.
 - Added SDK-compatible Expo Router dependencies, app configuration, setup instructions, and sample data for the shop portal.
+
+- Changed shop portal sample prices and sales to Indian rupees (₹), matching the customer app.
+- Added a Deliveries tab with order and customer details, delivery windows, driver labels, status progress, and demo status updates.
+- Expanded Stock status with in-stock, low-stock, and out-of-stock filters, counts, shelf locations, reorder levels, and quantities.
