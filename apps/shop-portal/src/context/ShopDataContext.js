@@ -33,8 +33,10 @@ export function ShopDataProvider({ children }) {
   const [deliveries, setDeliveries] = useState(initialDeliveries);
   const [team, setTeam] = useState(initialTeam);
   const [isOpen, setIsOpen] = useState(true);
-  const addProduct = (product) => setProducts((all) => [{ ...product, id: 'p' + Date.now(), sku: 'NEW-' + String(all.length + 1).padStart(3, '0'), reorderLevel: 5, location: 'Main shelf' }, ...all]);
+  const addProduct = (product) => setProducts((all) => [{ ...product, id: 'p' + Date.now(), sku: 'NEW-' + Date.now().toString().slice(-6), reorderLevel: 5, location: 'Main shelf' }, ...all]);
   const changeStock = (id, amount) => setProducts((all) => all.map((p) => p.id === id ? { ...p, stock: Math.max(0, p.stock + amount) } : p));
+  const updateProduct = (id, details) => setProducts((all) => all.map((p) => p.id === id ? { ...p, ...details } : p));
+  const deleteProduct = (id) => setProducts((all) => all.filter((p) => p.id !== id));
   const advanceOrder = (id) => {
     const next = { New: 'Preparing', Preparing: 'Ready', Ready: 'Completed' };
     setOrders((all) => all.map((o) => o.id === id && next[o.status] ? { ...o, status: next[o.status] } : o));
@@ -44,7 +46,7 @@ export function ShopDataProvider({ children }) {
     setDeliveries((all) => all.map((d) => d.id === id && next[d.status] ? { ...d, status: next[d.status] } : d));
   };
   const addMember = (member) => setTeam((all) => [...all, { ...member, id: 't' + Date.now(), initials: member.name.split(' ').map((part) => part[0]).join('').slice(0, 2).toUpperCase() }]);
-  const value = useMemo(() => ({ products, orders, deliveries, team, isOpen, setIsOpen, addProduct, changeStock, advanceOrder, advanceDelivery, addMember }), [products, orders, deliveries, team, isOpen]);
+  const value = useMemo(() => ({ products, orders, deliveries, team, isOpen, setIsOpen, addProduct, changeStock, updateProduct, deleteProduct, advanceOrder, advanceDelivery, addMember }), [products, orders, deliveries, team, isOpen]);
   return <ShopContext.Provider value={value}>{children}</ShopContext.Provider>;
 }
 export function useShop() {
@@ -52,3 +54,4 @@ export function useShop() {
   if (!value) throw new Error('useShop must be inside ShopDataProvider');
   return value;
 }
+
